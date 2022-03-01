@@ -14,24 +14,30 @@ resource "aws_subnet" "mgmt" {
     Name = "${var.name}-mgmt-subnet-${count.index}"
   }
 }
-resource "aws_route_table_association" "mgmt" {
-  count          = length(var.availability_zones)
-  subnet_id      = aws_subnet.mgmt[count.index].id
-  route_table_id = aws_route_table.mgmt.id
-}
-
 resource "aws_internet_gateway" "mgmt" {
   vpc_id = aws_vpc.mgmt.id
   tags = {
     Name = "${var.name}-mgmt-igw"
   }
 }
+
+resource "aws_route_table_association" "mgmt" {
+  count          = length(var.availability_zones)
+  subnet_id      = aws_subnet.mgmt[count.index].id
+  route_table_id = aws_route_table.mgmt.id
+}
+
 resource "aws_route_table" "mgmt" {
   vpc_id = aws_vpc.mgmt.id
+  tags = {
+    Name = "${var.name}-mgmt-rt"
+  }
+}
 
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.mgmt.id
+resource "aws_route" "mgmt-dg" {
+  route_table_id         = aws_route_table.mgmt.id
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.mgmt.id
   }
   tags = {
     Name = "${var.name}-mgmt-rt"
