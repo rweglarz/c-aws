@@ -74,21 +74,31 @@ resource "aws_security_group" "panorama" {
   name = "${var.name}-panorama"
 
   ingress {
+    description     = "ping"
+    from_port       = -1
+    to_port         = -1
+    protocol        = 1
+    cidr_blocks     = ["172.16.0.0/12"]
+  }
+  ingress {
+    description     = "panorama"
     from_port       = 3978
     to_port         = 3978
     protocol        = 6
     cidr_blocks     = ["172.16.0.0/12"]
   }
   ingress {
+    description     = "dlsrvr"
     from_port       = 28443
     to_port         = 28443
     protocol        = 6
     cidr_blocks     = ["172.16.0.0/12"]
   }
   ingress {
+    description     = "ha"
     from_port       = 0
     to_port         = 0
-    protocol        = 6
+    protocol        = "-1"
     cidr_blocks     = [
       "${local.panorama1_ip}/32",
       "${local.panorama2_ip}/32",
