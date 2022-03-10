@@ -1,4 +1,4 @@
-locals { 
+locals {
     panorama1_ip = cidrhost(aws_subnet.mgmt[0].cidr_block, 78)
     panorama2_ip = cidrhost(aws_subnet.mgmt[1].cidr_block, 28)
 }

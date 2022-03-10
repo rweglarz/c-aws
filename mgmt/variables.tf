@@ -22,12 +22,24 @@ variable "mgmt_cidr" {
   description = "mgmt vpc address /24 "
   type = string
 }
+variable "main_fw_cidr" {
+  description = "main fw vpc address /24"
+  type = string
+}
 
 variable "mgmt_ips" {
   description = "List of IPs allowed in external facing security group"
   type = list(map(string))
 }
 
+variable "fw_instance_type" {
+  default     = "m5.large"
+  type        = string
+}
+variable "fw_version" {
+  default     = "10.1.3"
+  type        = string
+}
 variable "panorama_version" {
   default     = "10.1.3-h1"
   type        = string
@@ -35,4 +47,9 @@ variable "panorama_version" {
 variable "ubuntu_version" {
   default     = "20.04"
   type        = string
+}
+
+variable "bootstrap_options" {
+  default = {}
+  type    = map(string)
 }
