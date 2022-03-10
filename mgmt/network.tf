@@ -44,6 +44,7 @@ resource "aws_route" "mgmt-dg" {
 resource "aws_security_group" "mgmt" {
   vpc_id      = aws_vpc.mgmt.id
   name = "${var.name}-mgmt-pub"
+  description = "public mgmt traffic"
 
   ingress {
     from_port       = 0
