@@ -24,9 +24,14 @@ variable "mgmt_cidr" {
 }
 
 variable "mgmt_ips" {
-  description = "List of IPs allowed in external facing security group"
+  description = "List of IPs allowed external access"
   type = list(map(string))
 }
+variable "tmp_ips" {
+  description = "List of tmp IPs allowed external access"
+  type = list(map(string))
+}
+
 
 variable "panorama_version" {
   default     = "10.1.3-h1"

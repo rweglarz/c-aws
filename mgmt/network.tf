@@ -53,6 +53,13 @@ resource "aws_security_group" "mgmt" {
     prefix_list_ids = [aws_ec2_managed_prefix_list.mgmt_ips.id]
     description     = "corporate ips"
   }
+  ingress {
+    from_port       = 0
+    to_port         = 0
+    protocol        = "-1"
+    prefix_list_ids = [aws_ec2_managed_prefix_list.tmp_ips.id]
+    description     = "temp ips"
+  }
   egress {
     from_port       = 0
     to_port         = 0
