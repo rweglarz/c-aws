@@ -1,5 +1,6 @@
 resource "aws_vpc" "mgmt" {
   cidr_block                       = var.mgmt_cidr
+  assign_generated_ipv6_cidr_block = true
   tags = {
     Name = "${var.name}-mgmt"
   }
@@ -9,6 +10,7 @@ resource "aws_subnet" "mgmt" {
   count             = length(var.availability_zones)
   vpc_id            = aws_vpc.mgmt.id
   cidr_block        = cidrsubnet(aws_vpc.mgmt.cidr_block, 1, 0 + count.index)
+  ipv6_cidr_block   = cidrsubnet(aws_vpc.mgmt.ipv6_cidr_block, 8, 0 + count.index)
   availability_zone = var.availability_zones[count.index]
   tags = {
     Name = "${var.name}-mgmt-subnet-${count.index}"
@@ -38,6 +40,11 @@ resource "aws_route" "mgmt-dg" {
   route_table_id         = aws_route_table.mgmt.id
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = aws_internet_gateway.mgmt.id
+}
+resource "aws_route" "mgmt-dg-ipv6" {
+  route_table_id              = aws_route_table.mgmt.id
+  destination_ipv6_cidr_block = "::/0"
+  gateway_id                  = aws_internet_gateway.mgmt.id
 }
 
 

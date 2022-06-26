@@ -1,5 +1,6 @@
 locals {
   panorama1_ip   = cidrhost(aws_subnet.mgmt[0].cidr_block, 78)
+  panorama1_ipv6 = cidrhost(aws_subnet.mgmt[0].ipv6_cidr_block, 78)
   panorama2_ip   = cidrhost(aws_subnet.mgmt[1].cidr_block, 28)
 }
 
@@ -13,6 +14,7 @@ resource "aws_instance" "panorama1" {
   ]
   key_name       = var.key_pair
   private_ip     = local.panorama1_ip
+  ipv6_addresses = [local.panorama1_ipv6]
   tags = {
     Name = "${var.name}-panorama-1"
   }
