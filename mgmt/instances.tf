@@ -46,7 +46,7 @@ resource "aws_instance" "panorama2" {
 
 resource "aws_instance" "jumphost" {
   ami                    = data.aws_ami.ubuntu.id
-  instance_type          = "t2.micro"
+  instance_type          = "t2.small"
   subnet_id              = resource.aws_subnet.mgmt[0].id
   vpc_security_group_ids = [resource.aws_security_group.mgmt.id]
   key_name               = var.key_pair
