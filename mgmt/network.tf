@@ -96,6 +96,7 @@ resource "aws_security_group" "panorama" {
     to_port     = 3978
     protocol    = 6
     cidr_blocks = ["172.16.0.0/12"]
+    prefix_list_ids = [aws_ec2_managed_prefix_list.csp_nat_ips.id]
   }
   ingress {
     description = "dlsrvr"
@@ -103,6 +104,7 @@ resource "aws_security_group" "panorama" {
     to_port     = 28443
     protocol    = 6
     cidr_blocks = ["172.16.0.0/12"]
+    prefix_list_ids = [aws_ec2_managed_prefix_list.csp_nat_ips.id]
   }
   ingress {
     description = "ha"

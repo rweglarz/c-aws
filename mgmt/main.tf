@@ -20,6 +20,12 @@ resource "aws_ec2_managed_prefix_list" "mgmt_ips" {
   }
 }
 
+resource "aws_ec2_managed_prefix_list" "csp_nat_ips" {
+  name           = "${var.name} csp permitted incoming IPs"
+  address_family = "IPv4"
+  max_entries    = 15
+}
+
 resource "aws_ec2_managed_prefix_list" "tmp_ips" {
   name           = "${var.name} public permitted tmp IPs"
   address_family = "IPv4"

@@ -10,3 +10,6 @@ output "aws_route_table_mgmt_id" {
   value = aws_route_table.mgmt.id
 }
 
+output "prefix_list-csp_nat_ips" {
+  value = aws_ec2_managed_prefix_list.csp_nat_ips.id
+}
