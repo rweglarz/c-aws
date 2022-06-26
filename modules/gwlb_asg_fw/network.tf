@@ -5,6 +5,13 @@ resource "aws_vpc" "this" {
   }
 }
 
+resource "aws_internet_gateway" "this" {
+  vpc_id = aws_vpc.this.id
+  tags = {
+    Name = "${var.name}-int-igw"
+  }
+}
+
 resource "aws_subnet" "tgwa" {
   count             = length(var.availability_zones)
   vpc_id            = aws_vpc.this.id
@@ -50,6 +57,31 @@ resource "aws_subnet" "untrust" {
     Name = "${var.name}-fw-untrust-${count.index}"
   }
 }
+resource "aws_subnet" "natgw" {
+  count             = length(var.availability_zones)
+  vpc_id            = aws_vpc.this.id
+  cidr_block        = cidrsubnet(aws_vpc.this.cidr_block, 4, 10 + count.index)
+  availability_zone = var.availability_zones[count.index]
+  tags = {
+    Name = "${var.name}-natgw-${count.index}"
+  }
+}
+resource "aws_eip" "natgw" {
+  count = length(var.availability_zones)
+  tags = {
+    Name = "${var.name}-natgw-${count.index}"
+  }
+}
+resource "aws_nat_gateway" "this" {
+  count         = length(var.availability_zones)
+  subnet_id     = aws_subnet.natgw[count.index].id
+  allocation_id = aws_eip.natgw[count.index].id
+
+  tags = {
+    Name = "${var.name}-natgw-${count.index}"
+  }
+  depends_on = [aws_internet_gateway.this]
+}
 
 resource "aws_vpc_endpoint" "this" {
   count = length(var.availability_zones)
@@ -78,7 +110,7 @@ resource "aws_route_table_association" "tgwa" {
   subnet_id      = aws_subnet.tgwa[count.index].id
   route_table_id = aws_route_table.tgwa[count.index].id
 }
-resource "aws_route" "tgwa_dg" {
+resource "aws_route" "tgwa-dg" {
   count                  = length(var.availability_zones)
   route_table_id         = aws_route_table.tgwa[count.index].id
   destination_cidr_block = "0.0.0.0/0"
@@ -86,22 +118,31 @@ resource "aws_route" "tgwa_dg" {
 }
 
 resource "aws_route_table" "gwlbe" {
+  count  = length(var.availability_zones)
   vpc_id = aws_vpc.this.id
   tags = {
-    Name = "${var.name}-gwlbe-rt"
+    Name = "${var.name}-gwlbe-rt-${count.index}"
   }
 }
 resource "aws_route_table_association" "gwlbe" {
   count          = length(var.availability_zones)
   subnet_id      = aws_subnet.gwlbe[count.index].id
-  route_table_id = aws_route_table.gwlbe.id
+  route_table_id = aws_route_table.gwlbe[count.index].id
 }
-resource "aws_route" "gwlbe_dg" {
-  route_table_id         = aws_route_table.gwlbe.id
-  destination_cidr_block = "0.0.0.0/0"
+resource "aws_route" "gwlbe-prv" {
+  count                  = length(var.availability_zones)
+  route_table_id         = aws_route_table.gwlbe[count.index].id
+  destination_cidr_block = "172.16.0.0/12"
   transit_gateway_id     = var.tgw
 }
+resource "aws_route" "gwlbe-dg" {
+  count                  = length(var.availability_zones)
+  route_table_id         = aws_route_table.gwlbe[count.index].id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.this[count.index].id
+}
 
+/*
 resource "aws_route_table" "fw" {
   vpc_id = aws_vpc.this.id
   tags = {
@@ -113,27 +154,61 @@ resource "aws_route_table_association" "fw" {
   subnet_id      = aws_subnet.fw_gwlb[count.index].id
   route_table_id = aws_route_table.fw.id
 }
-resource "aws_route" "fw_dg" {
+resource "aws_route" "fw-dg" {
   route_table_id         = aws_route_table.fw.id
   destination_cidr_block = "0.0.0.0/0"
   transit_gateway_id     = var.tgw
 }
+*/
 
 resource "aws_route_table" "mgmt" {
+  count  = length(var.availability_zones)
   vpc_id = aws_vpc.this.id
   tags = {
-    Name = "${var.name}-fw-mgmt"
+    Name = "${var.name}-fw-mgmt-${count.index}"
   }
 }
 resource "aws_route_table_association" "mgmt" {
   count          = length(var.availability_zones)
   subnet_id      = aws_subnet.mgmt[count.index].id
-  route_table_id = aws_route_table.fw.id
+  route_table_id = aws_route_table.mgmt[count.index].id
 }
-resource "aws_route" "mgmt_dg" {
-  route_table_id         = aws_route_table.mgmt.id
-  destination_cidr_block = "0.0.0.0/0"
+resource "aws_route" "mgmt-prv" {
+  count                  = length(var.availability_zones)
+  route_table_id         = aws_route_table.mgmt[count.index].id
+  destination_cidr_block = "172.16.0.0/12"
   transit_gateway_id     = var.tgw
+}
+resource "aws_route" "mgmt-dg-natgw" {
+  count                  = length(var.availability_zones)
+  route_table_id         = aws_route_table.mgmt[count.index].id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.this[count.index].id
+}
+
+resource "aws_route_table" "natgw" {
+  count  = length(var.availability_zones)
+  vpc_id = aws_vpc.this.id
+  tags = {
+    Name = "${var.name}-natgw-${count.index}"
+  }
+}
+resource "aws_route_table_association" "natgw" {
+  count          = length(var.availability_zones)
+  subnet_id      = aws_subnet.natgw[count.index].id
+  route_table_id = aws_route_table.natgw[count.index].id
+}
+resource "aws_route" "natgw-prv" {
+  count                  = length(var.availability_zones)
+  route_table_id         = aws_route_table.natgw[count.index].id
+  destination_cidr_block = "172.16.0.0/12"
+  vpc_endpoint_id        = aws_vpc_endpoint.this[count.index].id
+}
+resource "aws_route" "natgw-dg" {
+  count                  = length(var.availability_zones)
+  route_table_id         = aws_route_table.natgw[count.index].id
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.this.id
 }
 
 
