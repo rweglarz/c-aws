@@ -16,6 +16,11 @@ resource "aws_instance" "panorama1" {
   tags = {
     Name = "${var.name}-panorama-1"
   }
+  lifecycle {
+    ignore_changes = [
+      ami,
+    ]
+  }
 }
 resource "aws_instance" "panorama2" {
   ami           = data.aws_ami.panorama.id
@@ -30,6 +35,11 @@ resource "aws_instance" "panorama2" {
   tags = {
     Name = "${var.name}-panorama-2"
   }
+  lifecycle {
+    ignore_changes = [
+      ami,
+    ]
+  }
 }
 
 resource "aws_instance" "jumphost" {
@@ -39,6 +49,11 @@ resource "aws_instance" "jumphost" {
   vpc_security_group_ids = [resource.aws_security_group.mgmt.id]
   key_name               = var.key_pair
   private_ip             = cidrhost(aws_subnet.mgmt[0].cidr_block, 22)
+  lifecycle {
+    ignore_changes = [
+      ami,
+    ]
+  }
   tags = {
     Name = "${var.name}-jumphost"
   }
