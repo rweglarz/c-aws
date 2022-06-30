@@ -107,3 +107,10 @@ output "instance_profile-pan_ha" {
 output "instance_profile-pan_gwlb" {
   value = aws_iam_instance_profile.pan_gwlb.arn
 }
+
+output "instance_profile-pan_ha-name" {
+  value = aws_iam_instance_profile.pan_ha.name
+}
+output "instance_profile-pan_gwlb-name" {
+  value = aws_iam_instance_profile.pan_gwlb.name
+}
