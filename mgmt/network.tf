@@ -54,6 +54,20 @@ resource "aws_security_group" "mgmt" {
   description = "public mgmt traffic"
 
   ingress {
+    description = "ping"
+    from_port   = -1
+    to_port     = -1
+    protocol    = 1
+    cidr_blocks = ["172.16.0.0/12"]
+  }
+  ingress {
+    description = "user id redistribution"
+    from_port   = 5007
+    to_port     = 5007
+    protocol    = 6
+    cidr_blocks = ["172.16.0.0/12"]
+  }
+  ingress {
     from_port       = 0
     to_port         = 0
     protocol        = "-1"
