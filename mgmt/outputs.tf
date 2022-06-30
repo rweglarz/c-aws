@@ -13,3 +13,7 @@ output "aws_route_table_mgmt_id" {
 output "prefix_list-csp_nat_ips" {
   value = aws_ec2_managed_prefix_list.csp_nat_ips.id
 }
+
+output "prefix_list-mgmt_ips-eu_west_1" {
+  value = module.pl-eu_west_1-mgmt_ips.id
+}

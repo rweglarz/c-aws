@@ -6,6 +6,11 @@ provider "aws" {
   region = var.region
 }
 
+provider "aws" {
+  region = "eu-west-1"
+  alias  = "eu-west-1"
+}
+
 resource "aws_ec2_managed_prefix_list" "mgmt_ips" {
   name           = "${var.name} public permitted incoming IPs"
   address_family = "IPv4"
@@ -18,6 +23,14 @@ resource "aws_ec2_managed_prefix_list" "mgmt_ips" {
       description = entry.value.description
     }
   }
+}
+
+module "pl-eu_west_1-mgmt_ips" {
+  source    = "../modules/prefix_list"
+  providers = { aws = aws.eu-west-1 }
+
+  name = "${var.name} public permitted incoming IPs"
+  ips  = var.mgmt_ips
 }
 
 resource "aws_ec2_managed_prefix_list" "csp_nat_ips" {
