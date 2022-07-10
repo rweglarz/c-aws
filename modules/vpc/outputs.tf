@@ -14,6 +14,9 @@ output "sg_private_id" {
 }
 
 output "internet_gateway_id" {
+  value = try(aws_internet_gateway.this[0].id, null)
+}
+
 output "subnets" {
  value = aws_subnet.this
 }
