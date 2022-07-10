@@ -15,6 +15,10 @@ variable "deploy_igw" {
   default = true
 }
 
+variable "subnets" {
+  default = {}
+}
+
 variable "transit_gateway_id" {
   type    = string
   default = null

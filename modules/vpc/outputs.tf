@@ -14,5 +14,6 @@ output "sg_private_id" {
 }
 
 output "internet_gateway_id" {
-  value = aws_internet_gateway.this[0].id
+output "subnets" {
+ value = aws_subnet.this
 }
