@@ -19,7 +19,19 @@ variable "subnets" {
   default = {}
 }
 
+variable "connect_tgw" {
+  type    = bool
+  default = false
+}
+variable "tgw_appliance_mode" {
+  type    = bool
+  default = false
+}
 variable "transit_gateway_id" {
+  type    = string
+  default = null
+}
+variable "transit_gateway_route_table_id" {
   type    = string
   default = null
 }
