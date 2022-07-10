@@ -25,3 +25,4 @@ variable "cidr" {
 variable "mgmt_ips" {
   default = {}
 }
+
