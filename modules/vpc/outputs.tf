@@ -18,9 +18,17 @@ output "internet_gateway_id" {
 }
 
 output "subnets" {
- value = aws_subnet.this
+  value = aws_subnet.this
 }
 
 output "transit_gateway_attachment_id" {
   value = try(aws_ec2_transit_gateway_vpc_attachment.this[0].id, null)
+}
+
+output "route_tables" {
+  value = {
+    via_igw   = try(aws_route_table.via_igw[0].id, null),
+    via_tgw   = try(aws_route_table.via_tgw[0].id, null),
+    via_mixed = try(aws_route_table.via_mixed[0].id, null),
+  }
 }
