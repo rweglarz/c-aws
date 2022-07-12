@@ -29,6 +29,8 @@ def lambda_handler(event, context):
     instance = instance_description['Reservations'][0]['Instances'][0]
     instance_zone = instance['Placement']['AvailabilityZone']
     log("Handling Launch for {} in {}".format(instance_id, instance_zone))
+    log("Disabling source/destination check")
+    ec2_client.modify_instance_attribute(SourceDestCheck={'Value': False}, InstanceId=instance_id)
 
     device_index = 1
     for subnet in subnet_ids:

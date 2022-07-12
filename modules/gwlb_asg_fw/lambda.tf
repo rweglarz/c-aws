@@ -35,6 +35,7 @@ resource "aws_iam_policy" "lambda_iam_policy" {
           "ec2:DescribeSubnets",
           "ec2:DetachNetworkInterface",
           "ec2:ModifyNetworkInterfaceAttribute",
+          "ec2:ModifyInstanceAttribute",
           "ec2:TerminateInstances"
         ]
         Effect   = "Allow"
