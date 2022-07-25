@@ -82,8 +82,11 @@ def endpointMappingXML(pvpce, pinterface):
 
 def populateEndpointMappings(serials, mappings):
     params = copy.copy(base_params)
+    if len(serials)==0:
+      print("No connected serials found")
+      return
     for s in serials:
-        print(s)
+        print("Populating vpce mappings on {}".format(s))
         for v in mappings:
           params['target'] = s
           params['cmd'] = endpointMappingXML(v, mappings[v])
@@ -130,6 +133,7 @@ def modifyLaunchTemplate(mappings):
       LaunchTemplateData={'UserData':base64.b64encode(nlt.encode()).decode()},
       SourceVersion=str(latest_ver))
     v = di.get('LaunchTemplateVersion').get('VersionNumber')
+    print("set new version to: {}".format(v))
     client.modify_launch_template(LaunchTemplateName=ltn, DefaultVersion=str(v))
 
 def createDummyEndpointMappings():
