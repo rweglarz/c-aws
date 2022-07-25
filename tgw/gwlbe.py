@@ -136,6 +136,41 @@ def modifyLaunchTemplate(mappings):
     print("set new version to: {}".format(v))
     client.modify_launch_template(LaunchTemplateName=ltn, DefaultVersion=str(v))
 
+def getVPCEndpoints():
+  client = boto3.client('ec2', region_name=region) 
+  dv = client.describe_vpc_endpoints()
+  vpce_zone = {}
+  for e in dv.get('VpcEndpoints'):
+    if e.get('VpcEndpointType')!='GatewayLoadBalancer':
+      continue
+    vpce = e.get('VpcEndpointId')
+    for t in e.get('Tags'):
+      if t['Key']=='pan_zone':
+        zone = t['Value']
+        vpce_zone[vpce] = zone
+        break
+    else:
+      print("Did not find zone tag for {}".format(vpce))
+  return vpce_zone
+
+def getPanoramaZoneInterfaceMapping(template):
+  p = "/config/devices/entry[@name='localhost.localdomain']/"
+  p+= "template/entry[@name='{}']/".format(template)
+  p+= "config/devices/entry[@name='localhost.localdomain']/"
+  p+= "vsys/entry[@name='vsys1']"
+  params = copy.copy(base_params)
+  params['type'] = 'config'
+  params['action'] = 'get'
+  params['xpath'] = p
+  r = etree.fromstring(requests.get(pano_base_url, params=params, verify=False).content)
+  m = {}
+  for z in r.findall('.//entry/zone/entry'):
+    zone = z.attrib.get('name')
+    for i in z.findall('./network/layer3/member'):
+      interface = i.text
+      m[zone] = interface
+  return m
+
 def createDummyEndpointMappings():
   mappings = {}
   for i in range(1,251):
@@ -155,10 +190,23 @@ def readConfiguration():
 
 def main():
   readConfiguration()
-  mappings = createDummyEndpointMappings()
+  #mappings = createDummyEndpointMappings()
   #modifyLaunchTemplate(mappings)
-  serials = getDGMembers("awsgwlbvmseries")
-  getSysInfo(serials)
+  #serials = getDGMembers("awsgwlbvmseries")
+  #getSysInfo(serials)
+  #firewalls()
+  ez = getVPCEndpoints()
+  iz = getPanoramaZoneInterfaceMapping('aws-gwlb')
+  ei = {}
+  for vpce in ez:
+    try:
+      ei[vpce] = iz[ez[vpce]]
+    except:
+      print("Error populating {}".format(vpce))
+  print(ez)
+  print(iz)
+  print(ei)
+
 
 
 if __name__ == '__main__':
