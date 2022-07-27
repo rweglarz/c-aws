@@ -104,6 +104,8 @@ def firewalls():
       'vpce-00000000000000003': 'ethernet1/1.1',
       'vpce-00000000000000004': 'ethernet1/1.2',
       'vpce-00000000000000005': 'ethernet1/1.1',
+      'vpce-006cae7779c3741b1': 'ethernet1/1.2',
+      'vpce-0de7c14af8a7192b9': 'ethernet1/1.1',
     }
     populateEndpointMappings(serials, mappings)
     print()
