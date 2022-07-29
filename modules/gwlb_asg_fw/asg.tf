@@ -17,7 +17,7 @@ resource "aws_autoscaling_group" "this" {
   vpc_zone_identifier = aws_subnet.fw_gwlb[*].id
 
   desired_capacity          = var.desired_capacity
-  max_size                  = 2
+  max_size                  = 4
   min_size                  = 0
   health_check_grace_period = 1300
 
@@ -26,7 +26,11 @@ resource "aws_autoscaling_group" "this" {
     version = "$Latest"
   }
   lifecycle {
-    ignore_changes = [target_group_arns]
+    ignore_changes = [
+      target_group_arns,
+      desired_capacity,
+    ]
+  }
   }
 }
 
