@@ -72,7 +72,7 @@ def parseShowPluginsVmseriesAwsGwlb(txt):
         mappings[rm.group(1)] = rm.group(2)
   return mappings
 
-def getEndpointMappings(serials):
+def getFirewallsExistingVpceMappings(serial):
     params = copy.copy(base_params)
     r = etree.Element('show')
     s = etree.SubElement(r, 'plugins')
@@ -80,9 +80,15 @@ def getEndpointMappings(serials):
     s = etree.SubElement(s, 'aws')
     s = etree.SubElement(s, 'gwlb')
     params['cmd'] = etree.tostring(r)
-    for s in serials:
-        params['target'] = s
-        print(requests.get(pano_base_url, params=params, verify=False).content)
+    params['target'] = serial
+    resp = requests.get(pano_base_url, params=params, verify=False).content
+    xml_resp = etree.fromstring(resp)
+    if not xml_resp.attrib.get('status')=='success':
+        print("Failed to get mappings from {}".format(serial))
+        print(resp)
+        return {}
+    m = parseShowPluginsVmseriesAwsGwlb(xml_resp.find('./result').text)
+    return m
 
 def endpointMappingXML(pvpce, pinterface):
     r = etree.Element('request')
@@ -98,18 +104,35 @@ def endpointMappingXML(pvpce, pinterface):
     #print(etree.tostring(r, pretty_print=True).decode())
     return etree.tostring(r)
 
-def populateEndpointMappings(serials, mappings):
+def addVpceMappingToFirewall(serial, vpce, interface):
     params = copy.copy(base_params)
+    params['target'] = serial
+    params['cmd'] = endpointMappingXML(vpce, interface)
+    resp = requests.get(pano_base_url, params=params, verify=False).content
+    xml_resp = etree.fromstring(resp)
+    if not xml_resp.attrib.get('status')=='success':
+        print("Failed to create mapping {} {} on {}".format(vpce, interface, serial))
+        print(resp)
+        return False
+    return True
+
+
+def manageVpceMappingsOnFirewall(serial, mappings):
+    existing_mappings = getFirewallsExistingVpceMappings(serial)
+    for v in mappings:
+      if v in existing_mappings:
+        if mappings[v]==existing_mappings[v]:
+          continue
+      if addVpceMappingToFirewall(serial, v, mappings[v]):
+        print("Created mapping {} {}".format(v, mappings[v]))
+
+def manageVpceMappingsOnActiveFirewalls(serials, mappings):
     if len(serials)==0:
       print("No connected serials found")
       return
     for s in serials:
         print("Populating vpce mappings on {}".format(s))
-        for v in mappings:
-          params['target'] = s
-          params['cmd'] = endpointMappingXML(v, mappings[v])
-          print(requests.get(pano_base_url, params=params, verify=False).content)
-
+        manageVpceMappingsOnFirewall(s, mappings)
 
 def addVpceMappingsToLaunchTemplate(ltn, mappings):
     lt_po = 'plugin-op-commands=panorama-licensing-mode-on,aws-gwlb-inspect:enable'
@@ -208,6 +231,8 @@ def main():
   ei = mapVpceToInterface(endpoint_zone_mapping, interface_zone_mapping)
   print(ei)
   addVpceMappingsToLaunchTemplate('m-mfw', ei)
+  serials = getDGMembers("awsgwlbvmseries")
+  manageVpceMappingsOnActiveFirewalls(serials, ei)
 
 
 
