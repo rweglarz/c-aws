@@ -6,7 +6,6 @@ import copy
 import json
 from lxml import etree
 from lxml.builder import E 
-from panos.panorama import Panorama, DeviceGroup
 import requests
 import re
 import sys
@@ -14,8 +13,6 @@ import sys
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-
-#pip install pan-os-python
 
 region = 'eu-central-1'
 
