@@ -53,6 +53,12 @@ def getSysInfo(serials):
         print(requests.get(pano_base_url, params=params, verify=False).content)
 
 
+def vpceNoToVpceId(no):
+    vpcex = format(no, '#019x')
+    vpce = 'vpce-' + vpcex[2:]
+    return vpce
+
+
 def parseShowPluginsVmseriesAwsGwlb(txt):
     sm = 0
     mappings = {}
@@ -66,9 +72,11 @@ def parseShowPluginsVmseriesAwsGwlb(txt):
             continue
         if sm != 1:
             continue
-        rm = re.match(r'\s+(vpce-[a-f0-9]+)\s+(ethernet.*[0-9])\s*$', l)
+        rm = re.match(r'\s+vpce-([a-f0-9]+)\s+(ethernet.*[0-9])\s*$', l)
         if rm:
-            mappings[rm.group(1)] = rm.group(2)
+            vpce_no = int(rm.group(1), 16)
+            vpce = vpceNoToVpceId(vpce_no)
+            mappings[vpce] = rm.group(2)
     return mappings
 
 
