@@ -111,8 +111,7 @@ def firewalls():
     print()
     getEndpointMappings(serials)
 
-def modifyLaunchTemplate(mappings):
-    ltn = 'm-mfw'
+def addVpceMappingsToLaunchTemplate(ltn, mappings):
     lt_po = 'plugin-op-commands=panorama-licensing-mode-on,aws-gwlb-inspect:enable'
     client = boto3.client('ec2', region_name=region)
     di = client.describe_launch_template_versions(LaunchTemplateName=ltn,
@@ -138,7 +137,7 @@ def modifyLaunchTemplate(mappings):
     print("set new version to: {}".format(v))
     client.modify_launch_template(LaunchTemplateName=ltn, DefaultVersion=str(v))
 
-def getVPCEndpoints():
+def getAwsVpce():
   client = boto3.client('ec2', region_name=region) 
   dv = client.describe_vpc_endpoints()
   vpce_zone = {}
@@ -190,24 +189,25 @@ def readConfiguration():
     base_params["key"] = data["api_key"]
     pano_base_url = 'https://{}/api/'.format(data['hostname'])
 
+def mapVpceToInterface(endpoint_zone_mapping, interface_zone_mapping):
+  endpoint_interface_mapping = {}
+  for vpce in endpoint_zone_mapping:
+    z = endpoint_zone_mapping[vpce]
+    if not z in interface_zone_mapping:
+      print("No interface with zone {} exist in panorama template for {}".format(z, vpce))
+      continue
+    endpoint_interface_mapping[vpce] = interface_zone_mapping[z]
+  return endpoint_interface_mapping
+
 def main():
   readConfiguration()
   #mappings = createDummyEndpointMappings()
-  #modifyLaunchTemplate(mappings)
-  #serials = getDGMembers("awsgwlbvmseries")
   #getSysInfo(serials)
-  #firewalls()
-  ez = getVPCEndpoints()
-  iz = getPanoramaZoneInterfaceMapping('aws-gwlb')
-  ei = {}
-  for vpce in ez:
-    try:
-      ei[vpce] = iz[ez[vpce]]
-    except:
-      print("Error populating {}".format(vpce))
-  print(ez)
-  print(iz)
+  endpoint_zone_mapping = getAwsVpce()
+  interface_zone_mapping = getPanoramaZoneInterfaceMapping('aws-gwlb')
+  ei = mapVpceToInterface(endpoint_zone_mapping, interface_zone_mapping)
   print(ei)
+  addVpceMappingsToLaunchTemplate('m-mfw', ei)
 
 
 
