@@ -2,7 +2,7 @@ resource "aws_lb" "this" {
   name                             = var.name
   load_balancer_type               = "gateway"
   enable_cross_zone_load_balancing = true
-  subnets                          = aws_subnet.gwlbe[*].id
+  subnets                          = aws_subnet.gwlb[*].id
 }
 resource "aws_vpc_endpoint_service" "this" {
   acceptance_required        = false

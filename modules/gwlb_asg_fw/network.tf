@@ -21,28 +21,46 @@ resource "aws_subnet" "tgwa" {
     Name = "${var.name}-tgwa-${count.index}"
   }
 }
-resource "aws_subnet" "gwlbe" {
+resource "aws_subnet" "gwlbe-internal" {
   count             = length(var.availability_zones)
   vpc_id            = aws_vpc.this.id
   cidr_block        = cidrsubnet(aws_vpc.this.cidr_block, 4, 2 + count.index)
   availability_zone = var.availability_zones[count.index]
   tags = {
-    Name = "${var.name}-gwlbe-${count.index}"
+    Name = "${var.name}-gwlbe-internal-${count.index}"
   }
 }
-resource "aws_subnet" "fw_gwlb" {
+resource "aws_subnet" "gwlbe-outbound" {
   count             = length(var.availability_zones)
   vpc_id            = aws_vpc.this.id
   cidr_block        = cidrsubnet(aws_vpc.this.cidr_block, 4, 4 + count.index)
   availability_zone = var.availability_zones[count.index]
   tags = {
-    Name = "${var.name}-fw-gwlb-${count.index}"
+    Name = "${var.name}-gwlbe-outbound-${count.index}"
+  }
+}
+resource "aws_subnet" "gwlb" {
+  count             = length(var.availability_zones)
+  vpc_id            = aws_vpc.this.id
+  cidr_block        = cidrsubnet(aws_vpc.this.cidr_block, 4, 6 + count.index)
+  availability_zone = var.availability_zones[count.index]
+  tags = {
+    Name = "${var.name}-gwlb-${count.index}"
+  }
+}
+resource "aws_subnet" "fw" {
+  count             = length(var.availability_zones)
+  vpc_id            = aws_vpc.this.id
+  cidr_block        = cidrsubnet(aws_vpc.this.cidr_block, 4, 8 + count.index)
+  availability_zone = var.availability_zones[count.index]
+  tags = {
+    Name = "${var.name}-fw-${count.index}"
   }
 }
 resource "aws_subnet" "mgmt" {
   count             = length(var.availability_zones)
   vpc_id            = aws_vpc.this.id
-  cidr_block        = cidrsubnet(aws_vpc.this.cidr_block, 4, 6 + count.index)
+  cidr_block        = cidrsubnet(aws_vpc.this.cidr_block, 4, 10 + count.index)
   availability_zone = var.availability_zones[count.index]
   tags = {
     Name = "${var.name}-fw-mgmt-${count.index}"
@@ -51,7 +69,7 @@ resource "aws_subnet" "mgmt" {
 resource "aws_subnet" "untrust" {
   count             = length(var.availability_zones)
   vpc_id            = aws_vpc.this.id
-  cidr_block        = cidrsubnet(aws_vpc.this.cidr_block, 4, 8 + count.index)
+  cidr_block        = cidrsubnet(aws_vpc.this.cidr_block, 4, 12 + count.index)
   availability_zone = var.availability_zones[count.index]
   tags = {
     Name = "${var.name}-fw-untrust-${count.index}"
@@ -60,7 +78,7 @@ resource "aws_subnet" "untrust" {
 resource "aws_subnet" "natgw" {
   count             = length(var.availability_zones)
   vpc_id            = aws_vpc.this.id
-  cidr_block        = cidrsubnet(aws_vpc.this.cidr_block, 4, 10 + count.index)
+  cidr_block        = cidrsubnet(aws_vpc.this.cidr_block, 4, 14 + count.index)
   availability_zone = var.availability_zones[count.index]
   tags = {
     Name = "${var.name}-natgw-${count.index}"
@@ -83,10 +101,10 @@ resource "aws_nat_gateway" "this" {
   depends_on = [aws_internet_gateway.this]
 }
 
-resource "aws_vpc_endpoint" "this" {
+resource "aws_vpc_endpoint" "internal" {
   count = length(var.availability_zones)
 
-  subnet_ids        = [aws_subnet.gwlbe[count.index].id]
+  subnet_ids        = [aws_subnet.gwlbe-internal[count.index].id]
   vpc_id            = aws_vpc.this.id
   service_name      = aws_vpc_endpoint_service.this.service_name
   vpc_endpoint_type = "GatewayLoadBalancer"
@@ -94,6 +112,25 @@ resource "aws_vpc_endpoint" "this" {
   lifecycle {
     # Workaround for error "InvalidParameter: Endpoint must be removed from route table before deletion".
     create_before_destroy = true
+  }
+  tags = {
+    pan_zone = "internal"
+  }
+}
+resource "aws_vpc_endpoint" "outbound" {
+  count = length(var.availability_zones)
+
+  subnet_ids        = [aws_subnet.gwlbe-outbound[count.index].id]
+  vpc_id            = aws_vpc.this.id
+  service_name      = aws_vpc_endpoint_service.this.service_name
+  vpc_endpoint_type = "GatewayLoadBalancer"
+
+  lifecycle {
+    # Workaround for error "InvalidParameter: Endpoint must be removed from route table before deletion".
+    create_before_destroy = true
+  }
+  tags = {
+    pan_zone = "outbound"
   }
 }
 
@@ -114,30 +151,54 @@ resource "aws_route" "tgwa-dg" {
   count                  = length(var.availability_zones)
   route_table_id         = aws_route_table.tgwa[count.index].id
   destination_cidr_block = "0.0.0.0/0"
-  vpc_endpoint_id        = aws_vpc_endpoint.this[count.index].id
+  vpc_endpoint_id        = aws_vpc_endpoint.outbound[count.index].id
+}
+resource "aws_route" "tgwa-172" {
+  count                  = length(var.availability_zones)
+  route_table_id         = aws_route_table.tgwa[count.index].id
+  destination_cidr_block = "172.16.0.0/12"
+  vpc_endpoint_id        = aws_vpc_endpoint.internal[count.index].id
 }
 
-resource "aws_route_table" "gwlbe" {
+resource "aws_route_table" "gwlbe-internal" {
   count  = length(var.availability_zones)
   vpc_id = aws_vpc.this.id
   tags = {
-    Name = "${var.name}-gwlbe-rt-${count.index}"
+    Name = "${var.name}-gwlbe-internal-${count.index}"
   }
 }
-resource "aws_route_table_association" "gwlbe" {
-  count          = length(var.availability_zones)
-  subnet_id      = aws_subnet.gwlbe[count.index].id
-  route_table_id = aws_route_table.gwlbe[count.index].id
+resource "aws_route_table" "gwlbe-outbound" {
+  count  = length(var.availability_zones)
+  vpc_id = aws_vpc.this.id
+  tags = {
+    Name = "${var.name}-gwlbe-outbound-${count.index}"
+  }
 }
-resource "aws_route" "gwlbe-prv" {
+resource "aws_route_table_association" "gwlbe-internal" {
+  count          = length(var.availability_zones)
+  subnet_id      = aws_subnet.gwlbe-internal[count.index].id
+  route_table_id = aws_route_table.gwlbe-internal[count.index].id
+}
+resource "aws_route_table_association" "gwlbe-outbound" {
+  count          = length(var.availability_zones)
+  subnet_id      = aws_subnet.gwlbe-outbound[count.index].id
+  route_table_id = aws_route_table.gwlbe-outbound[count.index].id
+}
+resource "aws_route" "gwlbe-internal-prv" {
   count                  = length(var.availability_zones)
-  route_table_id         = aws_route_table.gwlbe[count.index].id
+  route_table_id         = aws_route_table.gwlbe-internal[count.index].id
+  destination_cidr_block = "172.16.0.0/12"
+  transit_gateway_id     = var.tgw
+}
+resource "aws_route" "gwlbe-outbound-prv" {
+  count                  = length(var.availability_zones)
+  route_table_id         = aws_route_table.gwlbe-outbound[count.index].id
   destination_cidr_block = "172.16.0.0/12"
   transit_gateway_id     = var.tgw
 }
 resource "aws_route" "gwlbe-dg" {
   count                  = length(var.availability_zones)
-  route_table_id         = aws_route_table.gwlbe[count.index].id
+  route_table_id         = aws_route_table.gwlbe-outbound[count.index].id
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id         = aws_nat_gateway.this[count.index].id
 }
@@ -202,7 +263,7 @@ resource "aws_route" "natgw-prv" {
   count                  = length(var.availability_zones)
   route_table_id         = aws_route_table.natgw[count.index].id
   destination_cidr_block = "172.16.0.0/12"
-  vpc_endpoint_id        = aws_vpc_endpoint.this[count.index].id
+  vpc_endpoint_id        = aws_vpc_endpoint.outbound[count.index].id
 }
 resource "aws_route" "natgw-dg" {
   count                  = length(var.availability_zones)

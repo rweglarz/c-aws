@@ -14,7 +14,7 @@ data "aws_ami" "pa_vm" {
 
 resource "aws_autoscaling_group" "this" {
   name                = var.name
-  vpc_zone_identifier = aws_subnet.fw_gwlb[*].id
+  vpc_zone_identifier = aws_subnet.fw[*].id
 
   desired_capacity          = var.desired_capacity
   max_size                  = 4
@@ -76,7 +76,7 @@ resource "aws_launch_template" "this" {
 
   network_interfaces {
     device_index    = 0
-    subnet_id       = aws_subnet.fw_gwlb[0].id
+    subnet_id       = aws_subnet.fw[0].id
     security_groups = [aws_security_group.fw.id]
   }
 }
