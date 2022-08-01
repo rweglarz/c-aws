@@ -90,13 +90,16 @@ def getFirewallsExistingVpceMappings(serial):
     m = parseShowPluginsVmseriesAwsGwlb(xml_resp.find('./result').text)
     return m
 
-def endpointMappingXML(pvpce, pinterface):
+def endpointMappingXML(pvpce, pinterface, associate):
     r = etree.Element('request')
     s = etree.SubElement(r, 'plugins')
     s = etree.SubElement(s, 'vm_series')
     s = etree.SubElement(s, 'aws')
     s = etree.SubElement(s, 'gwlb')
-    s = etree.SubElement(s, 'associate')
+    if associate:
+      s = etree.SubElement(s, 'associate')
+    else:
+      s = etree.SubElement(s, 'disassociate')
     vpce = etree.SubElement(s, 'vpc-endpoint')
     vpce.text = pvpce
     interface = etree.SubElement(s, 'interface')
@@ -107,7 +110,7 @@ def endpointMappingXML(pvpce, pinterface):
 def addVpceMappingToFirewall(serial, vpce, interface):
     params = copy.copy(base_params)
     params['target'] = serial
-    params['cmd'] = endpointMappingXML(vpce, interface)
+    params['cmd'] = endpointMappingXML(vpce, interface, True)
     resp = requests.get(pano_base_url, params=params, verify=False).content
     xml_resp = etree.fromstring(resp)
     if not xml_resp.attrib.get('status')=='success':
@@ -116,6 +119,17 @@ def addVpceMappingToFirewall(serial, vpce, interface):
         return False
     return True
 
+def deleteVpceMappingFromFirewall(serial, vpce, interface):
+    params = copy.copy(base_params)
+    params['target'] = serial
+    params['cmd'] = endpointMappingXML(vpce, interface, False)
+    resp = requests.get(pano_base_url, params=params, verify=False).content
+    xml_resp = etree.fromstring(resp)
+    if not xml_resp.attrib.get('status')=='success':
+        print("Failed to create mapping {} {} on {}".format(vpce, interface, serial))
+        print(resp)
+        return False
+    return True
 
 def manageVpceMappingsOnFirewall(serial, mappings):
     existing_mappings = getFirewallsExistingVpceMappings(serial)
@@ -125,6 +139,12 @@ def manageVpceMappingsOnFirewall(serial, mappings):
           continue
       if addVpceMappingToFirewall(serial, v, mappings[v]):
         print("Created mapping {} {}".format(v, mappings[v]))
+    for v in existing_mappings:
+      if v in mappings:
+        continue
+      print("Firewall has extra mapping {}".format(v))
+      if deleteVpceMappingFromFirewall(serial, v, existing_mappings[v]):
+        print("Removed mapping {} {}".format(v, existing_mappings[v]))
 
 def manageVpceMappingsOnActiveFirewalls(serials, mappings):
     if len(serials)==0:
