@@ -13,6 +13,12 @@ import sys
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+# 1. query vpce on aws, get zone from tag
+# 2. query panorama and gets the zone to interface mapping
+# 3. map the vpce via zone to interface
+# 4. update the launch template with vpce mappings for the new firewalls
+# 5. get the existing / connected fws from panorama
+# 6. update the existing firewalls with the vpce mappings
 
 region = 'eu-central-1'
 
