@@ -93,24 +93,6 @@ def populateEndpointMappings(serials, mappings):
           print(requests.get(pano_base_url, params=params, verify=False).content)
 
 
-def firewalls():
-    serials = getDGMembers("awsgwlbvmseries")
-    #getSysInfo(serials)
-    getEndpointMappings(serials)
-    print()
-    mappings = {
-      'vpce-00000000000000001': 'ethernet1/1.1',
-      'vpce-00000000000000002': 'ethernet1/1.2',
-      'vpce-00000000000000003': 'ethernet1/1.1',
-      'vpce-00000000000000004': 'ethernet1/1.2',
-      'vpce-00000000000000005': 'ethernet1/1.1',
-      'vpce-006cae7779c3741b1': 'ethernet1/1.2',
-      'vpce-0de7c14af8a7192b9': 'ethernet1/1.1',
-    }
-    populateEndpointMappings(serials, mappings)
-    print()
-    getEndpointMappings(serials)
-
 def addVpceMappingsToLaunchTemplate(ltn, mappings):
     lt_po = 'plugin-op-commands=panorama-licensing-mode-on,aws-gwlb-inspect:enable'
     client = boto3.client('ec2', region_name=region)
