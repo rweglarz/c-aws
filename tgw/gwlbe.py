@@ -54,6 +54,24 @@ def getSysInfo(serials):
         params['target'] = s
         print(requests.get(pano_base_url, params=params, verify=False).content)
 
+def parseShowPluginsVmseriesAwsGwlb(txt):
+  sm = 0
+  mappings = {}
+  for l in txt.splitlines():
+      if "GWLB enabled" in l:
+          if not "True" in l:
+            print("WARNING: GWLB not enabled")
+          continue
+      if "VPC endpoint" in l:
+          sm = 1
+          continue
+      if sm !=1:
+        continue
+      rm = re.match(r'\s+(vpce-[a-f0-9]+)\s+(ethernet.*[0-9])\s*$', l)
+      if rm:
+        mappings[rm.group(1)] = rm.group(2)
+  return mappings
+
 def getEndpointMappings(serials):
     params = copy.copy(base_params)
     r = etree.Element('show')
