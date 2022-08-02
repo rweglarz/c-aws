@@ -170,8 +170,10 @@ def manageVpceMappingsOnActiveFirewalls(serials, mappings):
         manageVpceMappingsOnFirewall(s, mappings)
 
 
-def addVpceMappingsToLaunchTemplate(ltn, mappings):
-    lt_po = 'plugin-op-commands=panorama-licensing-mode-on,aws-gwlb-inspect:enable'
+def manageVpceMappingsInLaunchTemplate(ltn, mappings):
+    new_mappings_txt = 'plugin-op-commands=panorama-licensing-mode-on,aws-gwlb-inspect:enable'
+    for v in sorted(mappings):
+        new_mappings_txt += ',aws-gwlb-associate-vpce:{}@{}'.format(v, mappings[v])
     client = boto3.client('ec2', region_name=region)
     di = client.describe_launch_template_versions(LaunchTemplateName=ltn,
                                                   Versions=['$Latest'])
@@ -180,15 +182,21 @@ def addVpceMappingsToLaunchTemplate(ltn, mappings):
         ud = v.get('LaunchTemplateData').get('UserData')
         lt = base64.b64decode(ud).decode()
     nlt = ''
+    found_gwlb = False
     for l in lt.splitlines():
         m = re.match(r'plugin-op-commands.*', l)
         if m:
-            nlt += lt_po
-            for v in mappings:
-                nlt += ',aws-gwlb-associate-vpce:{}@{}'.format(v, mappings[v])
+            if (l==new_mappings_txt):
+              print("Existing and old mappings are the same in launch template")
+              return
+            nlt += new_mappings_txt
             nlt += '\n'
+            found_gwlb = True
         else:
             nlt += l + '\n'
+    if not found_gwlb:
+      nlt += new_mappings_txt
+      nlt += '\n'
     di = client.create_launch_template_version(LaunchTemplateName=ltn,
                                                LaunchTemplateData={
                                                    'UserData':
@@ -289,7 +297,7 @@ def main():
         ei = mapVpceToInterface(endpoint_zone_mapping, interface_zone_mapping)
     print(ei)
     # 4. update the launch template with vpce mappings for the new firewalls
-    addVpceMappingsToLaunchTemplate('m-mfw', ei)
+    manageVpceMappingsInLaunchTemplate('m-mfw', ei)
     # 5. get the existing / connected fws from panorama
     serials = getDGMembers("awsgwlbvmseries")
     # 6. update the existing firewalls with the vpce mappings
