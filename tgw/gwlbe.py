@@ -237,10 +237,13 @@ def getPanoramaZoneInterfaceMapping(template):
     params['type'] = 'config'
     params['action'] = 'get'
     params['xpath'] = p
-    r = etree.fromstring(
-        requests.get(pano_base_url, params=params, verify=False).content)
+    resp = requests.get(pano_base_url, params=params, verify=False).content
+    xml_resp = etree.fromstring(resp)
+    r = xml_resp.find('./result')
+    if int(r.attrib.get('total-count')) == 0:
+      raise Exception('Did not find template: {}'.format(template))
     m = {}
-    for z in r.findall('.//entry/zone/entry'):
+    for z in xml_resp.findall('.//entry/zone/entry'):
         zone = z.attrib.get('name')
         for i in z.findall('./network/layer3/member'):
             interface = i.text
