@@ -138,7 +138,7 @@ def deleteVpceMappingFromFirewall(serial, vpce, interface):
     resp = requests.get(pano_base_url, params=params, verify=False).content
     xml_resp = etree.fromstring(resp)
     if not xml_resp.attrib.get('status') == 'success':
-        print("Failed to create mapping {} {} on {}".format(
+        print("Failed to delete mapping {} {} on {}".format(
             vpce, interface, serial))
         print(resp)
         return False
@@ -156,9 +156,8 @@ def manageVpceMappingsOnFirewall(serial, mappings):
     for v in existing_mappings:
         if v in mappings:
             continue
-        print("Firewall has extra mapping {}".format(v))
-        if deleteVpceMappingFromFirewall(serial, v, existing_mappings[v]):
-            print("Removed mapping {} {}".format(v, existing_mappings[v]))
+        print("Firewall has extra mapping {}, remove it".format(v))
+        deleteVpceMappingFromFirewall(serial, v, existing_mappings[v])
 
 
 def manageVpceMappingsOnActiveFirewalls(serials, mappings):
@@ -166,7 +165,7 @@ def manageVpceMappingsOnActiveFirewalls(serials, mappings):
         print("No connected serials found")
         return
     for s in serials:
-        print("Populating vpce mappings on {}".format(s))
+        print("Verifying vpce mappings on {}".format(s))
         manageVpceMappingsOnFirewall(s, mappings)
 
 
