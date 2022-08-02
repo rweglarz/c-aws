@@ -1,4 +1,5 @@
 #!env python3
+import argparse
 import base64
 import botocore
 import boto3
@@ -272,14 +273,20 @@ def mapVpceToInterface(endpoint_zone_mapping, interface_zone_mapping):
 
 
 def main():
+    parser = argparse.ArgumentParser(description='Create vpce mappings on fw and launch template')
+    parser.add_argument('--clean', action='store_true')
+    args = parser.parse_args()
+
+    ei = {}
     readConfiguration()
-    #getSysInfo(serials)
-    # 1. query vpce on aws, get zone from tag
-    endpoint_zone_mapping = getAwsVpce()
-    # 2. query panorama and gets the zone to interface mapping
-    interface_zone_mapping = getPanoramaZoneInterfaceMapping('aws-gwlb')
-    # 3. map the vpce via zone to interface
-    ei = mapVpceToInterface(endpoint_zone_mapping, interface_zone_mapping)
+    if not args.clean:
+        #getSysInfo(serials)
+        # 1. query vpce on aws, get zone from tag
+        endpoint_zone_mapping = getAwsVpce()
+        # 2. query panorama and gets the zone to interface mapping
+        interface_zone_mapping = getPanoramaZoneInterfaceMapping('aws-gwlb')
+        # 3. map the vpce via zone to interface
+        ei = mapVpceToInterface(endpoint_zone_mapping, interface_zone_mapping)
     print(ei)
     # 4. update the launch template with vpce mappings for the new firewalls
     addVpceMappingsToLaunchTemplate('m-mfw', ei)
