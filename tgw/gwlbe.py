@@ -66,7 +66,7 @@ def parseShowPluginsVmseriesAwsGwlb(txt):
     for l in txt.splitlines():
         if "GWLB enabled" in l:
             if not "True" in l:
-                print("WARNING: GWLB not enabled")
+                print("WARNING: GWLB not enabled, mappings cannot be verified")
             continue
         if "VPC endpoint" in l:
             sm = 1
@@ -187,7 +187,7 @@ def manageVpceMappingsInLaunchTemplate(ltn, mappings):
         m = re.match(r'plugin-op-commands.*', l)
         if m:
             if (l==new_mappings_txt):
-              print("Existing and old mappings are the same in launch template")
+              print("Existing mappings are correct, launch template update is not needed")
               return
             nlt += new_mappings_txt
             nlt += '\n'
