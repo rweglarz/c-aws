@@ -24,6 +24,13 @@ base_params = {
 pano_base_url = 'https://{}/api/'.format('dummy')
 
 
+def formatClientError(e):
+    s = ""
+    s += " code: {}\n".format(e.response['Error']['Code'])
+    s += " msg: {}\n".format(e.response['Error']['Message'])
+    s += " request ID: {}".format(e.response['ResponseMetadata']['RequestId'])
+    return s
+
 def getDGMembers(dg):
     params = copy.copy(base_params)
     r = etree.Element('show')
@@ -175,8 +182,16 @@ def manageVpceMappingsInLaunchTemplate(ltn, mappings):
     for v in sorted(mappings):
         new_mappings_txt += ',aws-gwlb-associate-vpce:{}@{}'.format(v, mappings[v])
     client = boto3.client('ec2', region_name=region)
-    di = client.describe_launch_template_versions(LaunchTemplateName=ltn,
-                                                  Versions=['$Latest'])
+    try:
+        di = client.describe_launch_template_versions(LaunchTemplateName=ltn,
+                                                    Versions=['$Latest'])
+    except botocore.exceptions.ClientError as e:
+        if e.response['Error']['Code']=='InvalidLaunchTemplateName.NotFoundException':
+            print("Launch template {} does not exist".format(ltn))
+            sys.exit(1)
+        print("Error describing AWS launch template: {}".format(ltn))
+        print(formatClientError(e))
+        sys.exit(1)
     for v in di.get('LaunchTemplateVersions'):
         latest_ver = v.get('VersionNumber')
         ud = v.get('LaunchTemplateData').get('UserData')
