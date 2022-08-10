@@ -54,6 +54,18 @@ resource "panos_panorama_template_variable" "aws_ha2z_b-ha2_gw" {
   type           = "ip-netmask"
   value          = cidrhost(aws_subnet.ha2z_b["ha2"].cidr_block, 1)
 }
+resource "panos_panorama_template_variable" "aws_ha2z_a-eth1_2_gw" {
+  template_stack = panos_panorama_template_stack.aws_ha2z_a.name
+  name           = "$eth1_2-gw"
+  type           = "ip-netmask"
+  value          = cidrhost(aws_subnet.ha2z_a["internet"].cidr_block, 1)
+}
+resource "panos_panorama_template_variable" "aws_ha2z_b-eth1_2_gw" {
+  template_stack = panos_panorama_template_stack.aws_ha2z_b.name
+  name           = "$eth1_2-gw"
+  type           = "ip-netmask"
+  value          = cidrhost(aws_subnet.ha2z_b["internet"].cidr_block, 1)
+}
 resource "panos_panorama_template_variable" "aws_ha2z_a-eth1_3_gw" {
   template_stack = panos_panorama_template_stack.aws_ha2z_a.name
   name           = "$eth1_3-gw"
@@ -86,21 +98,50 @@ resource "panos_panorama_ethernet_interface" "ha2z_eth1_2" {
   name     = "ethernet1/2"
   vsys     = "vsys1"
   mode     = "layer3"
-  #static_ips = [local.ip_mask["internet"][1]]
-  #static_ips = ["${module.fw-ha2z_a.aws_network_interface.this["internet"].private_ip_list[0]}/28"]
+
+  static_ips = ["$eth1_2-ip"]
+  /*
   enable_dhcp               = true
   create_dhcp_default_route = true
+  */
   management_profile = "ping"
+}
+resource "panos_panorama_template_variable" "aws_ha2z_a-eth1_2_ip" {
+  template_stack = panos_panorama_template_stack.aws_ha2z_a.name
+  name           = "$eth1_2-ip"
+  type           = "ip-netmask"
+  value          = "${module.fw-ha2z_a.private_ip_list["internet"][0]}/28"
+}
+resource "panos_panorama_template_variable" "aws_ha2z_b-eth1_2_ip" {
+  template_stack = panos_panorama_template_stack.aws_ha2z_b.name
+  name           = "$eth1_2-ip"
+  type           = "ip-netmask"
+  value          = "${module.fw-ha2z_b.private_ip_list["internet"][0]}/28"
 }
 resource "panos_panorama_ethernet_interface" "ha2z_eth1_3" {
   template = panos_panorama_template.ha2z.name
   name     = "ethernet1/3"
   vsys     = "vsys1"
   mode     = "layer3"
-  #static_ips = ["${module.fw-ha2z_a.aws_network_interface.this["prv"].private_ip_list[0]}/28"]
-  enable_dhcp = true
+
+  static_ips = ["$eth1_3-ip"]
+  /*
+  enable_dhcp               = true
   create_dhcp_default_route = false
+  */
   management_profile = "ping"
+}
+resource "panos_panorama_template_variable" "aws_ha2z_a-eth1_3_ip" {
+  template_stack = panos_panorama_template_stack.aws_ha2z_a.name
+  name           = "$eth1_3-ip"
+  type           = "ip-netmask"
+  value          = "${module.fw-ha2z_a.private_ip_list["prv"][0]}/28"
+}
+resource "panos_panorama_template_variable" "aws_ha2z_b-eth1_3_ip" {
+  template_stack = panos_panorama_template_stack.aws_ha2z_b.name
+  name           = "$eth1_3-ip"
+  type           = "ip-netmask"
+  value          = "${module.fw-ha2z_b.private_ip_list["prv"][0]}/28"
 }
 resource "panos_panorama_tunnel_interface" "ha2z_tun11" {
   template           = panos_panorama_template.ha2z.name
@@ -109,11 +150,29 @@ resource "panos_panorama_tunnel_interface" "ha2z_tun11" {
   static_ips         = ["169.254.12.2/30"]
   management_profile = "ping"
 }
+resource "panos_panorama_template_variable" "aws_ha2z-eth1_2_ip" {
+  template = panos_panorama_template.ha2z.name
+  name     = "$eth1_2-ip"
+  type     = "ip-netmask"
+  value    = "192.168.2.2"
+}
+resource "panos_panorama_template_variable" "aws_ha2z-eth1_3_ip" {
+  template = panos_panorama_template.ha2z.name
+  name     = "$eth1_3-ip"
+  type     = "ip-netmask"
+  value    = "192.168.3.2"
+}
+resource "panos_panorama_template_variable" "aws_ha2z-eth1_2_gw" {
+  template = panos_panorama_template.ha2z.name
+  name     = "$eth1_2-gw"
+  type     = "ip-netmask"
+  value    = "192.168.2.1"
+}
 resource "panos_panorama_template_variable" "aws_ha2z-eth1_3_gw" {
   template = panos_panorama_template.ha2z.name
   name     = "$eth1_3-gw"
   type     = "ip-netmask"
-  value    = "192.168.1.1"
+  value    = "192.168.3.1"
 }
 
 
@@ -152,6 +211,14 @@ resource "panos_virtual_router" "ha2z_vr1" {
     panos_panorama_ethernet_interface.ha2z_eth1_3.name,
     panos_panorama_tunnel_interface.ha2z_tun11.name,
   ]
+}
+resource "panos_panorama_static_route_ipv4" "ha2z_vr1_dg" {
+  template       = panos_panorama_template.ha2z.name
+  virtual_router = panos_virtual_router.ha2z_vr1.name
+  name           = "internet"
+  destination    = "0.0.0.0/0"
+  next_hop       = panos_panorama_template_variable.aws_ha2z-eth1_2_gw.name
+  interface      = panos_panorama_ethernet_interface.ha2z_eth1_2.name
 }
 resource "panos_panorama_static_route_ipv4" "ha2z_vr1_private" {
   template       = panos_panorama_template.ha2z.name
