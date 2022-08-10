@@ -210,7 +210,7 @@ def manageVpceMappingsInLaunchTemplate(ltn, mappings):
                                   DefaultVersion=str(v))
 
 
-def getAwsVpce():
+def getAwsVpceToPanZone():
     client = boto3.client('ec2', region_name=region)
     dv = client.describe_vpc_endpoints()
     vpce_zone = {}
@@ -293,7 +293,7 @@ def main():
     if not args.clean:
         #getSysInfo(serials)
         # 1. query vpce on aws, get zone from tag
-        endpoint_zone_mapping = getAwsVpce()
+        endpoint_zone_mapping = getAwsVpceToPanZone()
         # 2. query panorama and gets the zone to interface mapping
         interface_zone_mapping = getPanoramaZoneInterfaceMapping('aws-gwlb')
         # 3. map the vpce via zone to interface
