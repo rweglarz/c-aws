@@ -158,11 +158,8 @@ resource "panos_panorama_static_route_ipv4" "ha2z_vr1_private" {
   virtual_router = panos_virtual_router.ha2z_vr1.name
   name           = "private"
   destination    = "172.16.0.0/12"
-  next_hop       = panos_panorama_template_variable.aws_ha2z_b-eth1_3_gw.name
+  next_hop       = panos_panorama_template_variable.aws_ha2z-eth1_3_gw.name
   interface      = panos_panorama_ethernet_interface.ha2z_eth1_3.name
-  depends_on = [
-    panos_panorama_template_variable.aws_ha2z-eth1_3_gw
-  ]
 }
 resource "panos_panorama_static_route_ipv4" "ha2z_vr1_vpn" {
   template       = panos_panorama_template.ha2z.name
