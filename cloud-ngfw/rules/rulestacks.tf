@@ -44,3 +44,28 @@ resource "cloudngfwaws_security_rule" "r1" {
   action  = "Allow"
   logging = true
 }
+
+resource "cloudngfwaws_security_rule" "r3" {
+  rulestack   = cloudngfwaws_rulestack.rs1.name
+  priority    = 20
+  rule_list   = "LocalRule"
+  name        = "prot-port-test"
+  description = "only works with app any"
+  source {
+    cidrs = ["any"]
+  }
+  destination {
+    cidrs = ["10.1.1.0/24"]
+  }
+  applications = ["any"]
+  prot_port_list = [
+    "UDP:660",
+    "UDP:66",
+    "TCP:80",
+    "TCP:443",
+    "TCP:8080",
+  ]
+  category {}
+  action  = "Allow"
+  logging = true
+}
