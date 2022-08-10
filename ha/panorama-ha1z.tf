@@ -159,6 +159,10 @@ resource "panos_panorama_ike_gateway" "ha1z_ha2z" {
   enable_nat_traversal              = true
   nat_traversal_keep_alive          = 10
   nat_traversal_enable_udp_checksum = true
+
+  enable_dead_peer_detection   = true
+  dead_peer_detection_interval = 2
+  dead_peer_detection_retry    = 5
 }
 resource "panos_panorama_ipsec_tunnel" "ha1z_ha2z" {
   name             = "ha2z"
