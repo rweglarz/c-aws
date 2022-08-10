@@ -1,6 +1,6 @@
 resource "cloudngfwaws_rulestack" "rs1" {
-  name  = var.rule_stack
-  scope = "Local"
+  name        = var.rule_stack
+  scope       = "Local"
   account_id  = var.account_id //otherwise the account id will not be associated in webui
   description = "Made by Terraform"
   profile_config {
@@ -23,8 +23,8 @@ resource "cloudngfwaws_security_rule" "any-allow" {
   applications = ["any"]
   category {}
   protocol = "any"
-  action  = "Allow"
-  logging = true
+  action   = "Allow"
+  logging  = true
 }
 
 resource "cloudngfwaws_security_rule" "r1" {
