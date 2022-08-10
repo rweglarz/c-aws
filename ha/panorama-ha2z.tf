@@ -90,6 +90,7 @@ resource "panos_panorama_ethernet_interface" "ha2z_eth1_2" {
   #static_ips = ["${module.fw-ha2z_a.aws_network_interface.this["internet"].private_ip_list[0]}/28"]
   enable_dhcp               = true
   create_dhcp_default_route = true
+  management_profile = "ping"
 }
 resource "panos_panorama_ethernet_interface" "ha2z_eth1_3" {
   template = panos_panorama_template.ha2z.name
@@ -99,6 +100,7 @@ resource "panos_panorama_ethernet_interface" "ha2z_eth1_3" {
   #static_ips = ["${module.fw-ha2z_a.aws_network_interface.this["prv"].private_ip_list[0]}/28"]
   enable_dhcp = true
   create_dhcp_default_route = false
+  management_profile = "ping"
 }
 resource "panos_panorama_tunnel_interface" "ha2z_tun11" {
   template           = panos_panorama_template.ha2z.name
@@ -205,7 +207,7 @@ resource "panos_security_rule_group" "ha2z_ipsec" {
   position_keyword = "bottom"
   device_group     = "aws-ha2z"
   rule {
-    name                  = "ipsec allow"
+    name                  = "ipsec ping allow"
     audit_comment         = ""
     source_zones          = ["any"]
     source_addresses      = ["any"]
@@ -214,6 +216,7 @@ resource "panos_security_rule_group" "ha2z_ipsec" {
     destination_addresses = ["any"]
     applications = [
       "ipsec",
+      "ping",
     ]
     services   = ["application-default"]
     categories = ["any"]

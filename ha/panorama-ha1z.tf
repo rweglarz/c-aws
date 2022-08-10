@@ -70,6 +70,8 @@ resource "panos_panorama_ethernet_interface" "ha1z_eth1_2" {
   static_ips                = ["${module.fw-ha1z_a.private_ip_list["internet"][1]}/28"]
   enable_dhcp               = false
   create_dhcp_default_route = false
+
+  management_profile = "ping"
 }
 resource "panos_panorama_ethernet_interface" "ha1z_eth1_3" {
   template    = panos_panorama_template.ha1z.name
@@ -78,6 +80,8 @@ resource "panos_panorama_ethernet_interface" "ha1z_eth1_3" {
   mode        = "layer3"
   static_ips  = ["${module.fw-ha1z_a.private_ip_list["prv"][1]}/28"]
   enable_dhcp = false
+
+  management_profile = "ping"
 }
 resource "panos_panorama_tunnel_interface" "ha1z_tun11" {
   template           = panos_panorama_template.ha1z.name
@@ -195,7 +199,7 @@ resource "panos_security_rule_group" "ha1z_ipsec" {
   position_keyword = "bottom"
   device_group     = "aws-ha1z"
   rule {
-    name                  = "ipsec allow"
+    name                  = "ipsec ping allow"
     audit_comment         = ""
     source_zones          = ["any"]
     source_addresses      = ["any"]
@@ -204,6 +208,7 @@ resource "panos_security_rule_group" "ha1z_ipsec" {
     destination_addresses = ["any"]
     applications = [
       "ipsec",
+      "ping",
     ]
     services   = ["application-default"]
     categories = ["any"]
