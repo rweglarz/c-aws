@@ -94,6 +94,26 @@ module "vpc-attacker" {
   }
 }
 
+module "vpc-client" {
+  source = "../../modules/vpc"
+
+  name = "${var.name}-client"
+
+  cidr_block              = cidrsubnet(var.cidr, 2, 3)
+  public_mgmt_prefix_list = aws_ec2_managed_prefix_list.mgmt_ips.id
+  deploy_igw              = true
+
+  connect_tgw                    = true
+  transit_gateway_id             = aws_ec2_transit_gateway.tgw.id
+  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.spoke.id
+
+  subnets = {
+    "tgwa" : { "idx" : 0, "zone" : var.zones[0] },
+    "clnt" : { "idx" : 1, "zone" : var.zones[0] },
+  }
+}
+
+
 resource "aws_route_table_association" "attacker" {
   subnet_id      = module.vpc-attacker.subnets["attk"].id
   route_table_id = module.vpc-attacker.route_tables["via_mixed"]
@@ -102,6 +122,11 @@ resource "aws_route_table_association" "victim" {
   subnet_id      = module.vpc-victim.subnets["vict"].id
   route_table_id = module.vpc-victim.route_tables["via_mixed"]
 }
+resource "aws_route_table_association" "client" {
+  subnet_id      = module.vpc-client.subnets["clnt"].id
+  route_table_id = module.vpc-client.route_tables["pfx_via_igw"]
+}
+
 
 output "vpc-sec" {
   value = module.vpc-sec
