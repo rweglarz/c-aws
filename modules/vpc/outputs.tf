@@ -30,5 +30,6 @@ output "route_tables" {
     via_igw   = try(aws_route_table.via_igw[0].id, null),
     via_tgw   = try(aws_route_table.via_tgw[0].id, null),
     via_mixed = try(aws_route_table.via_mixed[0].id, null),
+    pfx_via_igw = try(aws_route_table.pfx_via_igw[0].id, null),
   }
 }
