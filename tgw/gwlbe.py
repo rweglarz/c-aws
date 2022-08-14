@@ -10,6 +10,7 @@ from lxml.builder import E
 import requests
 import re
 import sys
+import time
 
 import urllib3
 
@@ -223,6 +224,47 @@ def manageVpceMappingsInLaunchTemplate(ltn, mappings):
     print("set new version to: {}".format(v))
     client.modify_launch_template(LaunchTemplateName=ltn,
                                   DefaultVersion=str(v))
+
+
+def waitForVPCE(vpces, vpc):
+    client = boto3.client('ec2', region_name=region)
+    i = 0
+    vpce_filters = []
+    if vpces:
+        vpce_list = vpces.split(',')
+        vpce_filters.append({
+            'Name': 'vpc-endpoint-id', 
+            'Values': vpce_list
+            })
+    if vpc:
+        vpce_filters.append({
+            'Name': 'vpc-id', 
+            'Values': [vpc]
+            })
+    vpce_filters.append({
+        'Name': 'vpc-endpoint-type',
+        'Values': ['GatewayLoadBalancer']
+    })
+
+    while True:
+        dv = client.describe_vpc_endpoints(Filters=vpce_filters)
+        states = []
+        if i>0:
+            time.sleep(10)
+        i += 1
+        for e in dv.get('VpcEndpoints'):
+            state = e.get('State')
+            states.append(state)
+        print("{} {}".format(i, states))
+        if vpces and len(vpce_list)!=len(states):
+            print("Not all endpoints exist yet, found {}".format(len(states)))
+            if i>10:
+                print("This was attempt #{} and not all endpoints were found, giving up".format(i))
+                sys.exit(1)
+            continue
+        if all(s=='available' for s in states):
+            print("all endpoints available: {}".format(states))
+            return
 
 
 def getAwsVpceToPanZone():
