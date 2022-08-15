@@ -343,25 +343,39 @@ def mapVpceToInterface(endpoint_zone_mapping, interface_zone_mapping):
 def main():
     parser = argparse.ArgumentParser(description='Create vpce mappings on fw and launch template')
     parser.add_argument('--clean', action='store_true')
+    parser.add_argument('--dg', default='awsgwlbvmseries')
+    parser.add_argument('--ts', default='aws-gwlb')
+    parser.add_argument('--lt', default='m-mfw')
+    parser.add_argument('--region', default='eu-central-1')
+    parser.add_argument('--vpces')
+    parser.add_argument('--vpc')
+    parser.add_argument('cmd')
     args = parser.parse_args()
 
+    global region
+    region = args.region
     ei = {}
     readConfiguration()
-    if not args.clean:
-        #getSysInfo(serials)
-        # 1. query vpce on aws, get zone from tag
-        endpoint_zone_mapping = getAwsVpceToPanZone()
-        # 2. query panorama and gets the zone to interface mapping
-        interface_zone_mapping = getPanoramaZoneInterfaceMapping('aws-gwlb')
-        # 3. map the vpce via zone to interface
-        ei = mapVpceToInterface(endpoint_zone_mapping, interface_zone_mapping)
-    print(ei)
-    # 4. update the launch template with vpce mappings for the new firewalls
-    manageVpceMappingsInLaunchTemplate('m-mfw', ei)
-    # 5. get the existing / connected fws from panorama
-    serials = getDGMembers("awsgwlbvmseries")
-    # 6. update the existing firewalls with the vpce mappings
-    manageVpceMappingsOnActiveFirewalls(serials, ei)
+    print(args.cmd)
+    if args.cmd=="apply-vpce-map":
+        if not args.clean:
+            #getSysInfo(serials)
+            # 1. query vpce on aws, get zone from tag
+            endpoint_zone_mapping = getAwsVpceToPanZone()
+            # 2. query panorama and gets the zone to interface mapping
+            interface_zone_mapping = getPanoramaZoneInterfaceMapping('aws-gwlb')
+            # 3. map the vpce via zone to interface
+            ei = mapVpceToInterface(endpoint_zone_mapping, interface_zone_mapping)
+        print(ei)
+        # 4. update the launch template with vpce mappings for the new firewalls
+        manageVpceMappingsInLaunchTemplate('m-mfw', ei)
+        # 5. get the existing / connected fws from panorama
+        serials = getDGMembers("awsgwlbvmseries")
+        # 6. update the existing firewalls with the vpce mappings
+        manageVpceMappingsOnActiveFirewalls(serials, ei)
+        sys.exit(0)
+    if args.cmd=="vpce-wait":
+        waitForVPCE(args.vpces, args.vpc)
 
 
 if __name__ == '__main__':
