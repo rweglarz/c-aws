@@ -19,7 +19,7 @@ variable "rule_stack" {
 }
 variable "cidr" {
   type    = string
-  default = "172.16.1.0/24"
+  default = "172.16.1.0/23"
 }
 
 variable "mgmt_ips" {

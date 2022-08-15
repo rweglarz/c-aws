@@ -45,7 +45,8 @@ module "vpc-sec" {
 
   cidr_block              = cidrsubnet(var.cidr, 2, 0)
   public_mgmt_prefix_list = aws_ec2_managed_prefix_list.mgmt_ips.id
-  deploy_igw              = false
+  deploy_igw              = true
+  deploy_natgw            = true
 
   connect_tgw                    = true
   transit_gateway_id             = aws_ec2_transit_gateway.tgw.id
@@ -57,6 +58,8 @@ module "vpc-sec" {
     "tgwa-b" : { "idx" : 1, "zone" : var.zones[1] },
     "ngfw-a" : { "idx" : 2, "zone" : var.zones[0] },
     "ngfw-b" : { "idx" : 3, "zone" : var.zones[1] },
+    "natgw-a"  : { "idx" : 4, "zone" : var.zones[0] },
+    "natgw-b"  : { "idx" : 5, "zone" : var.zones[1] },
   }
 }
 
@@ -134,4 +137,7 @@ resource "aws_route_table_association" "client" {
 
 output "vpc-sec" {
   value = module.vpc-sec
+}
+output "tgw-id" {
+  value     =  aws_ec2_transit_gateway.tgw.id
 }
