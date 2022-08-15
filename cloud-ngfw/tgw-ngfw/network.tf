@@ -32,6 +32,10 @@ resource "aws_ec2_transit_gateway_route_table_propagation" "victim-into-sec" {
   transit_gateway_attachment_id  = module.vpc-victim.transit_gateway_attachment_id
   transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.sec.id
 }
+resource "aws_ec2_transit_gateway_route_table_propagation" "client-into-sec" {
+  transit_gateway_attachment_id  = module.vpc-client.transit_gateway_attachment_id
+  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.sec.id
+}
 
 
 module "vpc-sec" {
