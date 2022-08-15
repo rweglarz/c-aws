@@ -14,6 +14,11 @@ variable "deploy_igw" {
   type    = bool
   default = true
 }
+variable "deploy_natgw" {
+  type    = bool
+  default = false
+  description = "requires subnets with name natgw to exist"
+}
 
 variable "subnets" {
   default = {}

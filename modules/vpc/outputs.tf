@@ -33,3 +33,7 @@ output "route_tables" {
     pfx_via_igw = try(aws_route_table.pfx_via_igw[0].id, null),
   }
 }
+
+output "nat_gateways" {
+  value = { for k, v in aws_nat_gateway.this : k => v.id }
+}
