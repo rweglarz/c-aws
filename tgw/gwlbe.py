@@ -250,7 +250,7 @@ def waitForVPCE(vpces, vpc):
         dv = client.describe_vpc_endpoints(Filters=vpce_filters)
         states = []
         if i>0:
-            time.sleep(10)
+            time.sleep(30)
         i += 1
         for e in dv.get('VpcEndpoints'):
             state = e.get('State')
