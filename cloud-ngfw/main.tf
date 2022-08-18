@@ -34,4 +34,7 @@ data "aws_ami" "latest_ecs" {
 }
 
 
+output "region" {
+  value = var.region
+}
 
