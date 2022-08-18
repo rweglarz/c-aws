@@ -14,6 +14,9 @@ terraform {
 
 provider "cloudngfwaws" {
   json_config_file = "cloudngfwaws_creds.json"
+
+  region = var.region
+  host   = "api.${var.region}.aws.cloudngfw.paloaltonetworks.com"
 }
 
 data "aws_ami" "latest_ecs" {
