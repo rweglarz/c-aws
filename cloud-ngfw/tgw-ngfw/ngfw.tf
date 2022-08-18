@@ -1,5 +1,6 @@
-resource "cloudngfwaws_ngfw_log_profile" "example" {
-  ngfw       = cloudngfwaws_ngfw.x.name
+
+resource "cloudngfwaws_ngfw_log_profile" "this" {
+  ngfw       = cloudngfwaws_ngfw.this.name
   account_id = var.account_id
   log_destination {
     log_type         = "TRAFFIC"
@@ -18,7 +19,7 @@ resource "cloudngfwaws_ngfw_log_profile" "example" {
   }
 }
 
-resource "cloudngfwaws_ngfw" "x" {
+resource "cloudngfwaws_ngfw" "this" {
   name        = "${var.name}-tf"
   vpc_id      = module.vpc-sec.vpc.id
   account_id  = var.account_id
