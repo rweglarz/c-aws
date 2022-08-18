@@ -262,7 +262,7 @@ def waitForVPCE(vpces, vpc):
                 print("This was attempt #{} and not all endpoints were found, giving up".format(i))
                 sys.exit(1)
             continue
-        if all(s=='available' for s in states):
+        if all(s=='available' for s in states) and len(states) > 0:
             print("all endpoints available: {}".format(states))
             return
 
