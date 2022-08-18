@@ -21,6 +21,14 @@ variable "cidr" {
   type    = string
   default = "172.16.1.0/23"
 }
+variable "log_group" {
+  type  = string
+  default  = "PaloAltoCloudNGFW"
+}
+variable "log_retention_days" {
+  type = number
+  default = 30
+}
 
 variable "mgmt_ips" {
   default = {}

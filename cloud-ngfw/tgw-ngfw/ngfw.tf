@@ -1,21 +1,26 @@
+resource "aws_cloudwatch_log_group" "this" {
+  name = var.log_group
+  retention_in_days = var.log_retention_days
+}
 
 resource "cloudngfwaws_ngfw_log_profile" "this" {
   ngfw       = cloudngfwaws_ngfw.this.name
   account_id = var.account_id
+  cloud_watch_metric_namespace  = aws_cloudwatch_log_group.this.name
   log_destination {
     log_type         = "TRAFFIC"
     destination_type = "CloudWatchLogs"
-    destination      = "PaloAltoCloudNGFW"
+    destination      = aws_cloudwatch_log_group.this.name
   }
   log_destination {
     log_type         = "THREAT"
     destination_type = "CloudWatchLogs"
-    destination      = "PaloAltoCloudNGFW"
+    destination      = aws_cloudwatch_log_group.this.name
   }
   log_destination {
     log_type         = "DECRYPTION"
     destination_type = "CloudWatchLogs"
-    destination      = "PaloAltoCloudNGFW"
+    destination      = aws_cloudwatch_log_group.this.name
   }
 }
 
