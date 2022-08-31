@@ -16,7 +16,9 @@ resource "aws_instance" "panorama1" {
   private_ip     = local.panorama1_ip
   ipv6_addresses = [local.panorama1_ipv6]
   tags = {
-    Name = "${var.name}-panorama-1"
+    Name = "${var.name}-panorama-1",
+    tag1 = "v1",
+    tag2 = "v2",
   }
   lifecycle {
     ignore_changes = [
@@ -35,7 +37,9 @@ resource "aws_instance" "panorama2" {
   key_name   = var.key_pair
   private_ip = local.panorama2_ip
   tags = {
-    Name = "${var.name}-panorama-2"
+    Name = "${var.name}-panorama-2",
+    tag1 = "v1",
+    tag2 = "v2",
   }
   lifecycle {
     ignore_changes = [
