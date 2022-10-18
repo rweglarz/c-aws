@@ -60,3 +60,11 @@ resource "aws_ec2_transit_gateway_route_table_propagation" "sec_to_mgmt" {
   transit_gateway_attachment_id  = module.mfw.aws_ec2_transit_gateway_vpc_attachment_id
   transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.mgmt.id
 }
+resource "aws_ec2_transit_gateway_route_table_propagation" "mgmt-into-spoke" {
+  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.mgmt.id
+  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.spoke.id
+}
+
+output "fw_vpc_endpoint_service_name" {
+  value = module.mfw.aws_vpc_endpoint_service_name
+}

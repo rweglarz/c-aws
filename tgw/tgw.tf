@@ -19,3 +19,18 @@ resource "aws_ec2_transit_gateway_route" "spoke-dg" {
   transit_gateway_attachment_id  = module.mfw.aws_ec2_transit_gateway_vpc_attachment_id
   transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.spoke.id
 }
+
+
+output "transit_gateway_id" {
+  value = aws_ec2_transit_gateway.tgw.id
+}
+output "security_transit_gateway_vpc_attachment_id" {
+  value = module.mfw.aws_ec2_transit_gateway_vpc_attachment_id
+}
+output "transit_gateway_route_tables" {
+  value = {
+    spoke = aws_ec2_transit_gateway_route_table.spoke.id,
+    sec   = module.mfw.aws_ec2_transit_gateway_route_table_id
+    mgmt  = aws_ec2_transit_gateway_route_table.mgmt.id,
+  }
+}
