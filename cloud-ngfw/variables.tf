@@ -34,3 +34,7 @@ variable "mgmt_ips" {
   default = {}
 }
 
+variable "dns_zone" {
+  type = string
+}
+
