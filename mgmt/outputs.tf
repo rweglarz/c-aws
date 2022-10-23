@@ -17,3 +17,6 @@ output "prefix_list-csp_nat_ips" {
 output "prefix_list-mgmt_ips-eu_west_1" {
   value = module.pl-eu_west_1-mgmt_ips.id
 }
+output "prefix_list-mgmt_ips-eu_west_3" {
+  value = module.pl-eu_west_3-mgmt_ips.id
+}

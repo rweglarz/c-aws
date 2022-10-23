@@ -10,6 +10,10 @@ provider "aws" {
   region = "eu-west-1"
   alias  = "eu-west-1"
 }
+provider "aws" {
+  region = "eu-west-3"
+  alias  = "eu-west-3"
+}
 
 resource "aws_ec2_managed_prefix_list" "mgmt_ips" {
   name           = "${var.name} public permitted incoming IPs"
@@ -28,6 +32,13 @@ resource "aws_ec2_managed_prefix_list" "mgmt_ips" {
 module "pl-eu_west_1-mgmt_ips" {
   source    = "../modules/prefix_list"
   providers = { aws = aws.eu-west-1 }
+
+  name = "${var.name} public permitted incoming IPs"
+  ips  = var.mgmt_ips
+}
+module "pl-eu_west_3-mgmt_ips" {
+  source    = "../modules/prefix_list"
+  providers = { aws = aws.eu-west-3 }
 
   name = "${var.name} public permitted incoming IPs"
   ips  = var.mgmt_ips
