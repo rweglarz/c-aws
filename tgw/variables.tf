@@ -49,11 +49,11 @@ variable "ubuntu_version" {
 }
 
 variable "fw_instance_type" {
-  default = "m5.xlarge"
+  default = "m5.large"
   type    = string
 }
 variable "fw_version" {
-  default = "10.1.5"
+  default = "10.1.7"
   type    = string
 }
 
