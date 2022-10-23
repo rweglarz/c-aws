@@ -17,7 +17,7 @@ clean-sec:
 		terraform apply p1
 	-rm .state.tgw
 
-clean: $(call if_exist,.state.sec,clean-tgw) $(call if_exist,.state.tgw,clean-sec)
+clean: $(call if_exist,.state.tgw,clean-sec) $(call if_exist,.state.sec,clean-tgw)
 	true
 
 .state.tgw:
