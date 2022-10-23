@@ -42,3 +42,7 @@ variable "ubuntu_version" {
   default = "20.04"
   type    = string
 }
+
+variable "dns_zone" {
+  type = string
+}
