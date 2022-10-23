@@ -34,8 +34,19 @@ variable "ingress_cidr" {
   type    = string
   default = "172.31.252.0/24"
 }
+variable "app0_cidr" {
+  type    = string
+  default = "172.31.200.0/24"
+}
+variable "app1_cidr" {
+  type    = string
+  default = "172.31.201.0/24"
+}
 
 variable "pl-mgmt-csp_nat_ips" {
+  type = string
+}
+variable "pl-mgmt-mgmt_ips" {
   type = string
 }
 
