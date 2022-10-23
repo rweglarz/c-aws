@@ -38,3 +38,6 @@ variable "dns_zone" {
   type = string
 }
 
+variable "cert_path" {
+  type = string
+}
