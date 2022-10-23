@@ -42,6 +42,9 @@ variable "ubuntu_version" {
   default = "20.04"
   type    = string
 }
+variable "bootstrap_options" {
+  type = map(map(string))
+}
 
 variable "dns_zone" {
   type = string
