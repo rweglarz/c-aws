@@ -376,6 +376,9 @@ def main():
         sys.exit(0)
     if args.cmd=="vpce-wait":
         waitForVPCE(args.vpces, args.vpc)
+        sys.exit(0)
+    print("Unknown command")
+    sys.exit(1)
 
 
 if __name__ == '__main__':
