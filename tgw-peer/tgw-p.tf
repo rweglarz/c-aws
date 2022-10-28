@@ -59,7 +59,7 @@ resource "aws_ec2_transit_gateway_route" "peer-to-local-app5" {
 resource "aws_ec2_transit_gateway_route_table_association" "peer-sec" {
   provider                       = aws.peer
   transit_gateway_attachment_id  = aws_ec2_transit_gateway_peering_attachment.main-tgw.id
-  transit_gateway_route_table_id = data.terraform_remote_state.tgw.outputs.transit_gateway_route_tables["sec"]
+  transit_gateway_route_table_id = data.terraform_remote_state.tgw.outputs.transit_gateway_route_tables["spoke"]
   depends_on = [
     aws_ec2_transit_gateway_peering_attachment_accepter.main-tgw
   ]
