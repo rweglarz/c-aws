@@ -74,3 +74,7 @@ variable "asn" {
     no     = 4200000000
   }
 }
+
+variable "dns_zone" {
+  type = string
+}
