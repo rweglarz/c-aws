@@ -343,7 +343,7 @@ def mapVpceToInterface(endpoint_zone_mapping, interface_zone_mapping):
 def main():
     parser = argparse.ArgumentParser(description='Create vpce mappings on fw and launch template')
     parser.add_argument('--clean', action='store_true')
-    parser.add_argument('--dg', default='awsgwlbvmseries')
+    parser.add_argument('--dg', default='aws-gwlb')
     parser.add_argument('--ts', default='aws-gwlb')
     parser.add_argument('--lt', default='m-mfw')
     parser.add_argument('--region', default='eu-central-1')
