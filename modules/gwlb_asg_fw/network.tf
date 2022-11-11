@@ -15,7 +15,7 @@ resource "aws_internet_gateway" "this" {
 resource "aws_subnet" "tgwa" {
   count             = length(var.availability_zones)
   vpc_id            = aws_vpc.this.id
-  cidr_block        = cidrsubnet(aws_vpc.this.cidr_block, 4, 0 + count.index)
+  cidr_block        = cidrsubnet(aws_vpc.this.cidr_block, 5, 0*length(var.availability_zones) + count.index)
   availability_zone = var.availability_zones[count.index]
   tags = {
     Name = "${var.name}-tgwa-${count.index}"
@@ -24,7 +24,7 @@ resource "aws_subnet" "tgwa" {
 resource "aws_subnet" "gwlbe-internal" {
   count             = length(var.availability_zones)
   vpc_id            = aws_vpc.this.id
-  cidr_block        = cidrsubnet(aws_vpc.this.cidr_block, 4, 2 + count.index)
+  cidr_block        = cidrsubnet(aws_vpc.this.cidr_block, 5, 1*length(var.availability_zones) + count.index)
   availability_zone = var.availability_zones[count.index]
   tags = {
     Name = "${var.name}-gwlbe-internal-${count.index}"
@@ -33,7 +33,7 @@ resource "aws_subnet" "gwlbe-internal" {
 resource "aws_subnet" "gwlbe-outbound" {
   count             = length(var.availability_zones)
   vpc_id            = aws_vpc.this.id
-  cidr_block        = cidrsubnet(aws_vpc.this.cidr_block, 4, 4 + count.index)
+  cidr_block        = cidrsubnet(aws_vpc.this.cidr_block, 5, 2*length(var.availability_zones) + count.index)
   availability_zone = var.availability_zones[count.index]
   tags = {
     Name = "${var.name}-gwlbe-outbound-${count.index}"
@@ -42,7 +42,7 @@ resource "aws_subnet" "gwlbe-outbound" {
 resource "aws_subnet" "gwlb" {
   count             = length(var.availability_zones)
   vpc_id            = aws_vpc.this.id
-  cidr_block        = cidrsubnet(aws_vpc.this.cidr_block, 4, 6 + count.index)
+  cidr_block        = cidrsubnet(aws_vpc.this.cidr_block, 5, 3*length(var.availability_zones) + count.index)
   availability_zone = var.availability_zones[count.index]
   tags = {
     Name = "${var.name}-gwlb-${count.index}"
@@ -51,7 +51,7 @@ resource "aws_subnet" "gwlb" {
 resource "aws_subnet" "fw" {
   count             = length(var.availability_zones)
   vpc_id            = aws_vpc.this.id
-  cidr_block        = cidrsubnet(aws_vpc.this.cidr_block, 4, 8 + count.index)
+  cidr_block        = cidrsubnet(aws_vpc.this.cidr_block, 5, 4*length(var.availability_zones) + count.index)
   availability_zone = var.availability_zones[count.index]
   tags = {
     Name = "${var.name}-fw-${count.index}"
@@ -60,7 +60,7 @@ resource "aws_subnet" "fw" {
 resource "aws_subnet" "mgmt" {
   count             = length(var.availability_zones)
   vpc_id            = aws_vpc.this.id
-  cidr_block        = cidrsubnet(aws_vpc.this.cidr_block, 4, 10 + count.index)
+  cidr_block        = cidrsubnet(aws_vpc.this.cidr_block, 5, 5*length(var.availability_zones) + count.index)
   availability_zone = var.availability_zones[count.index]
   tags = {
     Name = "${var.name}-fw-mgmt-${count.index}"
@@ -69,7 +69,7 @@ resource "aws_subnet" "mgmt" {
 resource "aws_subnet" "untrust" {
   count             = length(var.availability_zones)
   vpc_id            = aws_vpc.this.id
-  cidr_block        = cidrsubnet(aws_vpc.this.cidr_block, 4, 12 + count.index)
+  cidr_block        = cidrsubnet(aws_vpc.this.cidr_block, 5, 6*length(var.availability_zones) + count.index)
   availability_zone = var.availability_zones[count.index]
   tags = {
     Name = "${var.name}-fw-untrust-${count.index}"
@@ -78,7 +78,7 @@ resource "aws_subnet" "untrust" {
 resource "aws_subnet" "natgw" {
   count             = length(var.availability_zones)
   vpc_id            = aws_vpc.this.id
-  cidr_block        = cidrsubnet(aws_vpc.this.cidr_block, 4, 14 + count.index)
+  cidr_block        = cidrsubnet(aws_vpc.this.cidr_block, 5, 7*length(var.availability_zones) + count.index)
   availability_zone = var.availability_zones[count.index]
   tags = {
     Name = "${var.name}-natgw-${count.index}"

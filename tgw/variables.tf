@@ -14,6 +14,7 @@ variable "availability_zones" {
   default = [
     "eu-central-1a",
     "eu-central-1b",
+    "eu-central-1c",
   ]
 }
 
@@ -24,7 +25,7 @@ variable "key_pair" {
 
 variable "sec_cidr" {
   type    = string
-  default = "172.31.253.0/24"
+  default = "172.31.252.0/23"
 }
 variable "tgw_cidr" {
   type    = string
@@ -32,7 +33,7 @@ variable "tgw_cidr" {
 }
 variable "ingress_cidr" {
   type    = string
-  default = "172.31.252.0/24"
+  default = "172.31.250.0/23"
 }
 variable "app0_cidr" {
   type    = string
