@@ -15,7 +15,7 @@ module "mfw" {
     var.bootstrap_options["pan_prv"],
     var.bootstrap_options["gwlb"],
   )
-  desired_capacity = 2
+  desired_capacity = 0
 }
 resource "aws_route" "sec-in-mgmt" {
   route_table_id         = data.terraform_remote_state.mgmt.outputs.aws_route_table_mgmt_id
@@ -67,4 +67,8 @@ resource "aws_ec2_transit_gateway_route_table_propagation" "mgmt-into-spoke" {
 
 output "fw_vpc_endpoint_service_name" {
   value = module.mfw.aws_vpc_endpoint_service_name
+}
+
+output "scale_it_out" {
+  value = "awsscg m-mfw 2"
 }
