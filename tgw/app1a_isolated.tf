@@ -25,7 +25,7 @@ resource "aws_vpc_endpoint" "app1a" {
     create_before_destroy = true
   }
   tags = {
-    pan_zone = "mapped001a"
+    pan_zone = "overlapping001a"
   }
 }
 
