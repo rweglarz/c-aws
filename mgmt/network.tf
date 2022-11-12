@@ -99,10 +99,11 @@ resource "aws_security_group" "panorama" {
 
   ingress {
     description = "ping"
-    from_port   = -1
+    from_port   = 8
     to_port     = -1
     protocol    = 1
     cidr_blocks = ["172.16.0.0/12"]
+    prefix_list_ids = [aws_ec2_managed_prefix_list.csp_nat_ips.id]
   }
   ingress {
     description = "panorama"
