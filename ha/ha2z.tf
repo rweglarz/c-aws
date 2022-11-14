@@ -87,6 +87,7 @@ module "fw-ha2z_a" {
 
   name             = "${var.name}-ha2z_a"
   fw_instance_type = "m5.xlarge"
+  fw_version       = var.fw_version
 
   iam_instance_profile = data.terraform_remote_state.mgmt.outputs.instance_profile-pan_ha-name
   key_pair             = var.key_pair
@@ -140,6 +141,7 @@ module "fw-ha2z_b" {
 
   name             = "${var.name}-ha2z_b"
   fw_instance_type = "m5.xlarge"
+  fw_version       = var.fw_version
 
   iam_instance_profile = data.terraform_remote_state.mgmt.outputs.instance_profile-pan_ha-name
   key_pair             = var.key_pair
