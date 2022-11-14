@@ -23,7 +23,7 @@ resource "aws_subnet" "ha1z_b" {
   cidr_block        = cidrsubnet(module.vpc-ha1z.vpc.cidr_block, 4, 1 + each.value.index * 2)
   availability_zone = var.availability_zones[1]
   tags = {
-    Name = "${var.name}-ha1z_a-${each.key}"
+    Name = "${var.name}-ha1z_b-${each.key}"
   }
 }
 
