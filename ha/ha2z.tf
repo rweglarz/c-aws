@@ -28,33 +28,56 @@ resource "aws_subnet" "ha2z_b" {
 }
 
 
-resource "aws_instance" "ha2z_host" {
+resource "aws_instance" "ha2z_client1" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t2.small"
-  subnet_id     = aws_subnet.ha2z_a["client"].id
+  subnet_id     = aws_subnet.ha2z_a["client1"].id
   vpc_security_group_ids = [
     module.vpc-ha2z.sg_public_id,
     module.vpc-ha2z.sg_private_id,
   ]
   key_name   = var.key_pair
-  private_ip = cidrhost(aws_subnet.ha2z_a["client"].cidr_block, 10)
+  private_ip = cidrhost(aws_subnet.ha2z_a["client1"].cidr_block, 10)
   lifecycle {
     ignore_changes = [
       ami,
     ]
   }
   tags = {
-    Name = "${var.name}-ha2z_host"
+    Name = "${var.name}-ha2z_client2"
   }
 }
-resource "aws_eip" "ha2z_host" {
-  instance = aws_instance.ha2z_host.id
+resource "aws_eip" "ha2z_client1" {
+  instance = aws_instance.ha2z_client1.id
   tags = {
-    Name = "${var.name}-ha2z_host"
+    Name = "${var.name}-ha2z_client1"
   }
 }
-output "ha2z_host" {
-  value = aws_eip.ha2z_host.public_ip
+
+resource "aws_instance" "ha2z_client2" {
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = "t2.small"
+  subnet_id     = aws_subnet.ha2z_b["client2"].id
+  vpc_security_group_ids = [
+    module.vpc-ha2z.sg_public_id,
+    module.vpc-ha2z.sg_private_id,
+  ]
+  key_name   = var.key_pair
+  private_ip = cidrhost(aws_subnet.ha2z_b["client2"].cidr_block, 10)
+  lifecycle {
+    ignore_changes = [
+      ami,
+    ]
+  }
+  tags = {
+    Name = "${var.name}-ha2z_client2"
+  }
+}
+resource "aws_eip" "ha2z_client2" {
+  instance = aws_instance.ha2z_client2.id
+  tags = {
+    Name = "${var.name}-ha2z_client2"
+  }
 }
 
 
@@ -174,26 +197,43 @@ output "ha2z_b" {
 }
 
 
+
 resource "aws_route_table" "ha2z-client" {
   vpc_id = module.vpc-ha2z.vpc.id
   tags = {
     Name = "${var.name}-ha2z-client"
   }
 }
-resource "aws_route_table_association" "ha2z-client" {
-  subnet_id      = aws_subnet.ha2z_a["client"].id
+resource "aws_route_table_association" "ha2z-client1" {
+  subnet_id      = aws_subnet.ha2z_a["client1"].id
+  route_table_id = aws_route_table.ha2z-client.id
+}
+resource "aws_route_table_association" "ha2z-client2" {
+  subnet_id      = aws_subnet.ha2z_b["client2"].id
   route_table_id = aws_route_table.ha2z-client.id
 }
 resource "aws_route" "ha2z-dg" {
   route_table_id         = aws_route_table.ha2z-client.id
   destination_cidr_block = "0.0.0.0/0"
-  gateway_id    = module.vpc-ha2z.internet_gateway_id
-}
-resource "aws_route" "ha2z-ipsec" {
-  route_table_id         = aws_route_table.ha2z-client.id
-  destination_cidr_block = aws_subnet.ha1z_a["client"].cidr_block
   network_interface_id   = module.fw-ha2z_a.eni["prv"]
 }
+resource "aws_route" "ha2z-mgmt" {
+  for_each               = { for e in var.mgmt_ips : replace(e.description, " ", "-") => e.cidr }
+  route_table_id         = aws_route_table.ha2z-client.id
+  destination_cidr_block = each.value
+  gateway_id             = module.vpc-ha2z.internet_gateway_id
+}
+resource "aws_route" "ha2z-client1" {
+  route_table_id         = aws_route_table.ha2z-client.id
+  destination_cidr_block = aws_subnet.ha2z_a["client1"].cidr_block
+  network_interface_id   = module.fw-ha2z_a.eni["prv"]
+}
+resource "aws_route" "ha2z-client2" {
+  route_table_id         = aws_route_table.ha2z-client.id
+  destination_cidr_block = aws_subnet.ha2z_b["client2"].cidr_block
+  network_interface_id   = module.fw-ha2z_a.eni["prv"]
+}
+
 
 
 resource "aws_route_table_association" "ha2z_a-mgmt" {

@@ -65,6 +65,13 @@ variable "subnets" {
     ha2      = { index = 1 },
     internet = { index = 2 },
     prv      = { index = 3 },
-    client   = { index = 4 },
+    client1  = { index = 4 },
+    client2  = { index = 5 },
   }
+}
+
+variable "mgmt_ips" {
+  description = "List of IPs allowed for external access"
+  type        = list(map(string))
+}
 }
