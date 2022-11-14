@@ -74,4 +74,7 @@ variable "mgmt_ips" {
   description = "List of IPs allowed for external access"
   type        = list(map(string))
 }
+
+variable "dns_zone" {
+  type = string
 }
