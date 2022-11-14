@@ -1,3 +1,19 @@
+resource "panos_device_group" "aws_ha1z" {
+  name = "aws-ha1z"
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+resource "panos_device_group_parent" "aws_ha1z" {
+  device_group = panos_device_group.aws_ha1z.name
+  parent       = "aws vm common"
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
 resource "panos_panorama_template_stack" "aws_ha1z_a" {
   name         = "aws-ha1z-a"
   default_vsys = "vsys1"
@@ -6,6 +22,7 @@ resource "panos_panorama_template_stack" "aws_ha1z_a" {
     "vm-ha",
     "vm common",
   ]
+  description = "pat:acp"
 }
 resource "panos_panorama_template_stack" "aws_ha1z_b" {
   name         = "aws-ha1z-b"
@@ -15,6 +32,7 @@ resource "panos_panorama_template_stack" "aws_ha1z_b" {
     "vm-ha",
     "vm common",
   ]
+  description = "pat:acp"
 }
 
 resource "panos_panorama_template_variable" "aws_ha1z_a-ha1_peer_ip" {
@@ -213,5 +231,30 @@ resource "panos_security_rule_group" "ha1z_ipsec" {
     services   = ["application-default"]
     categories = ["any"]
     action     = "allow"
+  }
+}
+
+resource "panos_panorama_nat_rule_group" "aws_ha1z-pre-nat" {
+  device_group = panos_device_group.aws_ha1z.name
+  rule {
+    name = "default outbound snat"
+    original_packet {
+      source_zones          = [panos_zone.ha1z_private.name]
+      destination_zone      = panos_zone.ha1z_internet.name
+      source_addresses      = ["172.16.0.0/12"]
+      destination_addresses = ["any"]
+
+    }
+    translated_packet {
+      source {
+        dynamic_ip_and_port {
+          interface_address {
+            interface = panos_panorama_ethernet_interface.ha1z_eth1_2.name
+          }
+        }
+      }
+      destination {
+      }
+    }
   }
 }
