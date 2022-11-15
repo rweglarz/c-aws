@@ -117,11 +117,11 @@ resource "panos_panorama_ethernet_interface" "ha2z_eth1_2" {
   vsys     = "vsys1"
   mode     = "layer3"
 
-  static_ips = ["$eth1_2-ip"]
   /*
+  static_ips = ["$eth1_2-ip"]
+  */
   enable_dhcp               = true
   create_dhcp_default_route = true
-  */
   management_profile = "ping"
 }
 resource "panos_panorama_template_variable" "aws_ha2z_a-eth1_2_ip" {
@@ -142,11 +142,11 @@ resource "panos_panorama_ethernet_interface" "ha2z_eth1_3" {
   vsys     = "vsys1"
   mode     = "layer3"
 
-  static_ips = ["$eth1_3-ip"]
   /*
+  static_ips = ["$eth1_3-ip"]
+  */
   enable_dhcp               = true
   create_dhcp_default_route = false
-  */
   management_profile = "ping"
 }
 resource "panos_panorama_template_variable" "aws_ha2z_a-eth1_3_ip" {
@@ -238,13 +238,23 @@ resource "panos_panorama_static_route_ipv4" "ha2z_vr1_dg" {
   next_hop       = panos_panorama_template_variable.aws_ha2z-eth1_2_gw.name
   interface      = panos_panorama_ethernet_interface.ha2z_eth1_2.name
 }
-resource "panos_panorama_static_route_ipv4" "ha2z_vr1_private" {
+resource "panos_panorama_static_route_ipv4" "ha2z_vr1_private_a" {
   template       = panos_panorama_template.ha2z.name
   virtual_router = panos_virtual_router.ha2z_vr1.name
-  name           = "private"
+  name           = "private-a"
   destination    = "172.16.0.0/12"
-  next_hop       = panos_panorama_template_variable.aws_ha2z-eth1_3_gw.name
+  next_hop       = cidrhost(aws_subnet.ha2z_a["prv"].cidr_block, 1)
   interface      = panos_panorama_ethernet_interface.ha2z_eth1_3.name
+  metric         = 11
+}
+resource "panos_panorama_static_route_ipv4" "ha2z_vr1_private_b" {
+  template       = panos_panorama_template.ha2z.name
+  virtual_router = panos_virtual_router.ha2z_vr1.name
+  name           = "private-b"
+  destination    = "172.16.0.0/12"
+  next_hop       = cidrhost(aws_subnet.ha2z_b["prv"].cidr_block, 1)
+  interface      = panos_panorama_ethernet_interface.ha2z_eth1_3.name
+  metric         = 12
 }
 resource "panos_panorama_static_route_ipv4" "ha2z_vr1_vpn" {
   template       = panos_panorama_template.ha2z.name
@@ -329,4 +339,20 @@ resource "panos_panorama_nat_rule_group" "aws_ha2z-pre-nat" {
       }
     }
   }
+}
+
+locals {
+  ha2_route_monitor_base = "set template ${panos_panorama_template.ha2z.name} config network virtual-router ${panos_virtual_router.ha2z_vr1.name} routing-table ip static-route private-a path-monitor"
+}
+output "panorama_h2_route_monitor" {
+  value = [
+    "${local.ha2_route_monitor_base} monitor-destinations r-a enable yes",
+    "${local.ha2_route_monitor_base} monitor-destinations r-a source DHCP",
+    "${local.ha2_route_monitor_base} monitor-destinations r-a destination ${cidrhost(aws_subnet.ha2z_a["prv"].cidr_block, 1)}",
+    "${local.ha2_route_monitor_base} monitor-destinations r-a interval 1",
+    "${local.ha2_route_monitor_base} monitor-destinations r-a count 3",
+    "${local.ha2_route_monitor_base} enable yes",
+    "${local.ha2_route_monitor_base} failure-condition any",
+    "${local.ha2_route_monitor_base} hold-time 0",
+  ]
 }

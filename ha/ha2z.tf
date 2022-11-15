@@ -255,3 +255,40 @@ resource "aws_route_table_association" "ha2z_b-internet" {
   route_table_id = module.vpc-ha2z.route_tables["via_igw"]
 }
 
+
+resource "aws_network_acl" "ha2z" {
+  vpc_id   = module.vpc-ha2z.vpc.id
+  egress {
+    protocol   = -1
+    rule_no    = 100
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 0
+    to_port    = 0
+  }
+
+  ingress {
+    protocol   = "icmp"
+    rule_no    = 50
+    action     = "deny"
+    cidr_block = aws_subnet.ha2z_b["prv"].cidr_block
+    icmp_code = -1
+    icmp_type = 8
+    from_port  = 0
+    to_port    = 0
+  }
+  ingress {
+    protocol   = -1
+    rule_no    = 100
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 0
+    to_port    = 0
+  }
+}
+
+resource "aws_network_acl_association" "ha2z" {
+  network_acl_id = aws_network_acl.ha2z.id
+  subnet_id      = aws_subnet.ha2z_a["prv"].id
+}
+
