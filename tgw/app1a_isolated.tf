@@ -42,7 +42,7 @@ resource "aws_instance" "app1a_app1" {
   associate_public_ip_address = true
 
   tags = {
-    Name = "${var.name}-app1"
+    Name = "${var.name}-app1a"
   }
 }
 

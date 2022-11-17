@@ -10,8 +10,8 @@ module "vpc-app1b" {
   connect_tgw = false
 
   subnets = {
-    "app1" : { "idx" : 0, "zone" : var.availability_zones[0] },
-    "vpce" : { "idx" : 1, "zone" : var.availability_zones[0] },
+    "app1" : { "idx" : 0, "zone" : var.availability_zones[1] },
+    "vpce" : { "idx" : 1, "zone" : var.availability_zones[1] },
   }
 }
 
