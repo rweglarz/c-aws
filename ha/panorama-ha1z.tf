@@ -19,7 +19,7 @@ resource "panos_panorama_template_stack" "aws_ha1z_a" {
   default_vsys = "vsys1"
   templates = [
     panos_panorama_template.ha1z.name,
-    "vm-ha",
+    "vm-ha-ha2-eth1-1",
     "vm common",
   ]
   description = "pat:acp"
@@ -29,7 +29,7 @@ resource "panos_panorama_template_stack" "aws_ha1z_b" {
   default_vsys = "vsys1"
   templates = [
     panos_panorama_template.ha1z.name,
-    "vm-ha",
+    "vm-ha-ha2-eth1-1",
     "vm common",
   ]
   description = "pat:acp"
