@@ -55,7 +55,7 @@ resource "aws_security_group" "mgmt" {
 
   ingress {
     description = "ping"
-    from_port   = -1
+    from_port   = 8
     to_port     = -1
     protocol    = 1
     cidr_blocks = ["172.16.0.0/12"]
