@@ -49,3 +49,7 @@ variable "bootstrap_options" {
 variable "dns_zone" {
   type = string
 }
+
+variable "cloud_ngfw_principals" {
+  type = list
+}

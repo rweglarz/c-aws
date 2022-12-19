@@ -34,9 +34,7 @@ resource "aws_iam_role" "ngfw_role" {
         "Sid" : "",
         "Effect" : "Allow",
         "Principal" : {
-          "AWS" : [
-            "arn:aws:sts::788337323161:assumed-role/AWSReservedSSO_AWSAdministratorAccess_e8497e9645670c39/rweglarz@paloaltonetworks.com"
-          ]
+          "AWS" : var.cloud_ngfw_principals
         },
         "Action" : "sts:AssumeRole"
       }

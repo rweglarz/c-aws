@@ -1,5 +1,5 @@
 resource "aws_route53_zone" "w-aws" {
-  name = "w-aws.rrwwee.com"
+  name = var.dns_zone
 }
 
 
