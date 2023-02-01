@@ -29,7 +29,7 @@ variable "key_pair" {
 
 variable "cidr" {
   type    = string
-  default = "172.31.0.0/23"
+  default = "172.31.0.0/22"
 }
 
 variable "subnets" {
