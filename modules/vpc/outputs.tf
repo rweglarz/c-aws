@@ -35,5 +35,5 @@ output "route_tables" {
 }
 
 output "nat_gateways" {
-  value = { for k, v in aws_nat_gateway.this : k => v.id }
+  value = aws_nat_gateway.this
 }
