@@ -15,6 +15,11 @@ variable "public_mgmt_prefix_list" {
   type = string
 }
 
+variable "subnet_mask_length" {
+  type = number
+  default = 28
+}
+
 variable "deploy_igw" {
   type    = bool
   default = true
