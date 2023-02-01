@@ -65,3 +65,6 @@ variable "ubuntu_version" {
   type    = string
 }
 
+variable "panorama1_ip" { }
+variable "panorama2_ip" { }
+

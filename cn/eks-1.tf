@@ -1,18 +1,21 @@
 module "eks_c1" {
   source = "terraform-aws-modules/eks/aws"
 
-  cluster_name    = "${var.name}-1"
+  cluster_name    = "${var.name}-c1"
   cluster_version = var.k8s_version
 
   vpc_id = module.vpc_eks.vpc.id
+  control_plane_subnet_ids = [
+    for k, v in module.vpc_eks.subnets : v.id if length(regexall("k8s-cp-", k)) > 0
+  ]
   subnet_ids = [
-    for k, v in module.vpc_eks.subnets : v.id if length(regexall("k8s", k)) > 0
+    for k, v in module.vpc_eks.subnets : v.id if length(regexall("k8s-n-", k)) > 0
   ]
 
   cluster_addons = {
     aws-ebs-csi-driver = {
       most_recent              = true
-      service_account_role_arn = module.ebs_csi_irsa_role.iam_role_arn
+      service_account_role_arn = module.ebs_csi_irsa_role_c1.iam_role_arn
     }
     # coredns = {
     #   most_recent = true
@@ -26,11 +29,14 @@ module "eks_c1" {
   }
 
 
-  cluster_endpoint_public_access_cidrs = [for k, v in var.mgmt_ips : v.cidr]
-  cluster_endpoint_public_access       = true #just to have it explicitly
-  cluster_endpoint_private_access      = true
+  cluster_endpoint_public_access_cidrs = concat(
+    [for k, v in var.mgmt_ips : v.cidr],
+    [for ip in [var.panorama1_ip, var.panorama2_ip] : "${ip}/32"],
+  )
+  cluster_endpoint_public_access  = true #just to have it explicitly
+  cluster_endpoint_private_access = true
 
-  manage_aws_auth_configmap = true
+  manage_aws_auth_configmap = false
 
   node_security_group_additional_rules = {
     r1 = {
@@ -84,10 +90,10 @@ module "eks_c1" {
 }
 
 
-module "ebs_csi_irsa_role" {
+module "ebs_csi_irsa_role_c1" {
   source = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
 
-  role_name             = "ebs-csi"
+  role_name             = "ebs-csi-c1"
   attach_ebs_csi_policy = true
 
   oidc_providers = {
@@ -100,14 +106,14 @@ module "ebs_csi_irsa_role" {
 
 
 
-provider "kubernetes" {
-  host                   = module.eks_c1.cluster_endpoint
-  cluster_ca_certificate = base64decode(module.eks_c1.cluster_certificate_authority_data)
+# provider "kubernetes" {
+#   host                   = module.eks_c1.cluster_endpoint
+#   cluster_ca_certificate = base64decode(module.eks_c1.cluster_certificate_authority_data)
 
-  exec {
-    api_version = "client.authentication.k8s.io/v1"
-    command     = "aws"
-    args        = ["eks", "get-token", "--cluster-name", module.eks_c1.cluster_name]
-  }
-}
+#   exec {
+#     api_version = "client.authentication.k8s.io/v1"
+#     command     = "aws"
+#     args        = ["eks", "get-token", "--cluster-name", module.eks_c1.cluster_name]
+#   }
+# }
 
