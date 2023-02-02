@@ -8,7 +8,8 @@ resource "cloudngfwaws_rulestack" "rs1" {
     #anti_virus = "None"
     #anti_spyware = "None"
     #vulnerability = "None"
-    outbound_trust_certificate = "panka-trust"
+    url_filtering                = "Custom"
+    outbound_trust_certificate   = "panka-trust"
     outbound_untrust_certificate = "panka-untrust"
     #outbound_trust_certificate = "self-signed-trust2"
   }
@@ -29,8 +30,8 @@ resource "cloudngfwaws_security_rule" "r1" {
   category {}
   applications = ["web-browsing"]
   protocol     = "application-default"
-  action  = "Allow"
-  logging = true
+  action       = "Allow"
+  logging      = true
 }
 
 resource "cloudngfwaws_security_rule" "r3" {
@@ -58,7 +59,53 @@ resource "cloudngfwaws_security_rule" "r3" {
   logging = true
 }
 
-resource "cloudngfwaws_security_rule" "any-allow-decrypt-2" {
+resource "cloudngfwaws_security_rule" "client-allow-no-decrypt" {
+  rulestack   = cloudngfwaws_rulestack.rs1.name
+  priority    = 271
+  rule_list   = "LocalRule"
+  name        = "client-allow-no-decrypt"
+  description = "Configured via Terraform"
+  source {
+    cidrs = ["172.16.1.0/24"]
+  }
+  destination {
+    cidrs = ["any"]
+  }
+  applications = ["any"]
+  category {
+    url_category_names = [
+      "financial-services",
+    ]
+  }
+  protocol = "any"
+
+  #decryption_rule_type = "SSLOutboundInspection"
+  action  = "Allow"
+  logging = true
+}
+
+resource "cloudngfwaws_security_rule" "client-allow-decrypt" {
+  rulestack   = cloudngfwaws_rulestack.rs1.name
+  priority    = 272
+  rule_list   = "LocalRule"
+  name        = "client-allow-decrypt"
+  description = "Configured via Terraform"
+  source {
+    cidrs = ["172.16.1.0/24"]
+  }
+  destination {
+    cidrs = ["any"]
+  }
+  applications = ["any"]
+  category {}
+  protocol = "any"
+
+  decryption_rule_type = "SSLOutboundInspection"
+  action               = "Allow"
+  logging              = true
+}
+
+resource "cloudngfwaws_security_rule" "any-allow-decrypt" {
   rulestack   = cloudngfwaws_rulestack.rs1.name
   priority    = 300
   rule_list   = "LocalRule"
@@ -75,6 +122,6 @@ resource "cloudngfwaws_security_rule" "any-allow-decrypt-2" {
   protocol = "any"
 
   decryption_rule_type = "SSLOutboundInspection"
-  action   = "Allow"
-  logging  = true
+  action               = "Allow"
+  logging              = true
 }
