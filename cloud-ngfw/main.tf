@@ -3,11 +3,10 @@ provider "aws" {
 }
 
 terraform {
-  required_version = ">= 0.12"
   required_providers {
     cloudngfwaws = {
       source = "PaloAltoNetworks/cloudngfwaws"
-      version = "1.0.8"
+      version = "1.0.9"
     }
   }
 }

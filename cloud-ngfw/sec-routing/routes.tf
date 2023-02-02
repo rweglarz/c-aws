@@ -1,5 +1,6 @@
 data "cloudngfwaws_ngfw" "x" {
-  name = "${var.name}-tf"
+  name       = "${var.name}-tf"
+  account_id = var.account_id
 }
 
 data "aws_subnet" "ngfw" {
