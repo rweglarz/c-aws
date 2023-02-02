@@ -51,3 +51,9 @@ commit:
 		terraform plan -out p1 && \
 		terraform apply p1
 	
+update-terraform:
+	for p in rules commit sec-routing tgw-ngfw; do \
+		echo ===== $$p; \
+		(cd $$p; terraform init -upgrade); \
+		echo ===; \
+		done
