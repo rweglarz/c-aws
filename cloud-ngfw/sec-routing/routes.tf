@@ -82,7 +82,7 @@ resource "aws_route" "ngfw-to_natgw" {
 
   route_table_id         = aws_route_table.ngfw[each.value.availability_zone].id
   destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = data.terraform_remote_state.tgw-ngfw.outputs.vpc-sec.nat_gateways[each.value.availability_zone]
+  nat_gateway_id         = data.terraform_remote_state.tgw-ngfw.outputs.vpc-sec.nat_gateways[each.value.availability_zone].id
 }
 
 
@@ -108,7 +108,7 @@ resource "aws_route" "natgw-to_igw" {
 
   route_table_id         = aws_route_table.natgw[each.value.availability_zone].id
   destination_cidr_block = "0.0.0.0/0"
-  gateway_id              = data.terraform_remote_state.tgw-ngfw.outputs.vpc-sec.internet_gateway_id
+  gateway_id             = data.terraform_remote_state.tgw-ngfw.outputs.vpc-sec.internet_gateway_id
 }
 
 resource "aws_route" "natgw-to_vpce" {
