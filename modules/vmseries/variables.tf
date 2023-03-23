@@ -5,7 +5,7 @@ variable "name" {
 
 variable "fw_version" {
   type    = string
-  default = "10.1.5"
+  default = "10.1.9"
 }
 
 variable "fw_instance_type" {
