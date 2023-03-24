@@ -12,6 +12,12 @@ data "aws_ami" "pa_vm" {
   }
 }
 
+resource "aws_placement_group" "this" {
+  name         = var.name
+  strategy     = "spread"
+  spread_level = "rack"
+}
+
 resource "aws_autoscaling_group" "this" {
   name                = var.name
   vpc_zone_identifier = aws_subnet.fw[*].id
@@ -19,6 +25,7 @@ resource "aws_autoscaling_group" "this" {
   desired_capacity          = var.desired_capacity
   max_size                  = 4
   min_size                  = 0
+  placement_group           = aws_placement_group.this.id
   health_check_grace_period = 1300
 
   launch_template {
