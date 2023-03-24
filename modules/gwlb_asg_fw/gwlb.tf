@@ -24,8 +24,13 @@ resource "aws_lb_target_group" "this" {
   port        = "6081"
 
   health_check {
-    path     = "/php/login.php"
+    path     = "/unauth/php/health.php"
     port     = 80
     protocol = "HTTP"
+
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    timeout             = 2
+    interval            = 5
   }
 }
