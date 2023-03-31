@@ -6,7 +6,7 @@ locals {
 
 resource "aws_instance" "panorama1" {
   ami           = data.aws_ami.panorama.id
-  instance_type = "m5.2xlarge"
+  instance_type = "m5.4xlarge"
   subnet_id     = resource.aws_subnet.mgmt[0].id
   vpc_security_group_ids = [
     resource.aws_security_group.mgmt.id,
@@ -23,12 +23,13 @@ resource "aws_instance" "panorama1" {
   lifecycle {
     ignore_changes = [
       ami,
+      instance_type,
     ]
   }
 }
 resource "aws_instance" "panorama2" {
   ami           = data.aws_ami.panorama.id
-  instance_type = "m5.2xlarge"
+  instance_type = "m5.4xlarge"
   subnet_id     = resource.aws_subnet.mgmt[1].id
   vpc_security_group_ids = [
     resource.aws_security_group.mgmt.id,
@@ -44,6 +45,7 @@ resource "aws_instance" "panorama2" {
   lifecycle {
     ignore_changes = [
       ami,
+      instance_type,
     ]
   }
 }
