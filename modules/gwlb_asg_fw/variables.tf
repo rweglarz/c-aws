@@ -38,3 +38,7 @@ variable "iam_instance_profile" {
     type = string
     default = null
 }
+
+variable "target_failover" {
+    default = "no_rebalance"
+}

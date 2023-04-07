@@ -16,6 +16,7 @@ module "mfw" {
     var.bootstrap_options["gwlb"],
   )
   desired_capacity = 0
+  target_failover  = var.target_failover
 }
 resource "aws_route" "sec-in-mgmt" {
   route_table_id         = data.terraform_remote_state.mgmt.outputs.aws_route_table_mgmt_id

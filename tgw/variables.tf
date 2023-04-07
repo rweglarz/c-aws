@@ -79,3 +79,7 @@ variable "asn" {
 variable "dns_zone" {
   type = string
 }
+
+variable "target_failover" {
+  default = "no_rebalance"
+}

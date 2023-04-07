@@ -33,4 +33,8 @@ resource "aws_lb_target_group" "this" {
     timeout             = 2
     interval            = 5
   }
+  target_failover {
+    on_deregistration = var.target_failover
+    on_unhealthy      = var.target_failover
+  }
 }
