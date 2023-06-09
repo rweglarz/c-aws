@@ -116,6 +116,33 @@ resource "aws_network_interface" "k8s-ci" {
   }
 }
 
+resource "aws_network_interface" "k8s-ti" {
+  for_each          = var.hsf_nodes
+  subnet_id         = module.vpc_eks.subnets["k8s-ti-a"].id
+  source_dest_check = false
+  lifecycle {
+    ignore_changes = [tags]
+  }
+}
+
+resource "aws_network_interface" "k8s-d3" {
+  for_each          = var.hsf_nodes
+  subnet_id         = module.vpc_eks.subnets["k8s-d3-a"].id
+  source_dest_check = false
+  lifecycle {
+    ignore_changes = [tags]
+  }
+}
+
+resource "aws_network_interface" "k8s-d4" {
+  for_each          = var.hsf_nodes
+  subnet_id         = module.vpc_eks.subnets["k8s-d4-a"].id
+  source_dest_check = false
+  lifecycle {
+    ignore_changes = [tags]
+  }
+}
+
 resource "aws_instance" "k8s-nodes" {
   for_each      = var.hsf_nodes
   ami           = data.aws_ami.eks.id
@@ -132,10 +159,18 @@ resource "aws_instance" "k8s-nodes" {
     device_index         = 1
     network_interface_id = aws_network_interface.k8s-ci[each.key].id
   }
-  # network_interface {
-  #   device_index         = 2
-  #   network_interface_id = module.vpc_eks.subnets["k8s-ti-a"].id
-  # }
+  network_interface {
+    device_index         = 2
+    network_interface_id = aws_network_interface.k8s-ti[each.key].id
+  }
+  network_interface {
+    device_index         = 3
+    network_interface_id = aws_network_interface.k8s-d3[each.key].id
+  }
+  network_interface {
+    device_index         = 4
+    network_interface_id = aws_network_interface.k8s-d4[each.key].id
+  }
 
 
   user_data_base64            = data.template_cloudinit_config.k8s[each.key].rendered

@@ -21,9 +21,13 @@ module "vpc_eks" {
     "k8s-m-a" : { "idx" : 1, "zone" : var.availability_zones[0], "subnet_mask_length" : 24 },
     "k8s-m-b" : { "idx" : 2, "zone" : var.availability_zones[1], "subnet_mask_length" : 24 },
     "k8s-ci-a" : { "idx" : 49, "zone" : var.availability_zones[0] },
-    "k8s-ti-a" : { "idx" : 50, "zone" : var.availability_zones[1] },
-    "k8s-d3-b" : { "idx" : 51, "zone" : var.availability_zones[1] },
-    "k8s-d4-b" : { "idx" : 52, "zone" : var.availability_zones[1] },
+    "k8s-ci-b" : { "idx" : 50, "zone" : var.availability_zones[1] },
+    "k8s-ti-a" : { "idx" : 51, "zone" : var.availability_zones[0] },
+    "k8s-ti-b" : { "idx" : 52, "zone" : var.availability_zones[1] },
+    "k8s-d3-a" : { "idx" : 53, "zone" : var.availability_zones[0] },
+    "k8s-d3-b" : { "idx" : 54, "zone" : var.availability_zones[1] },
+    "k8s-d4-a" : { "idx" : 55, "zone" : var.availability_zones[0] },
+    "k8s-d4-b" : { "idx" : 56, "zone" : var.availability_zones[1] },
   }
 }
 
