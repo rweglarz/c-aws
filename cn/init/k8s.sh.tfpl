@@ -1,0 +1,22 @@
+#!/bin/bash
+set -o xtrace
+#yum install -y golang git pciutils tcpdump
+
+git clone https://github.com/containernetworking/plugins
+HOME=/root /plugins/build_linux.sh
+echo -e '[Unit]\nDescription=dhcp for cni\n[Service]\nExecStart=/plugins/bin/dhcp daemon\n[Install]\nWantedBy=multi-user.target' >> /etc/systemd/system/ipam-dhcp.service
+systemctl enable --now ipam-dhcp
+
+echo "vm.nr_hugepages = 1024" | tee -a /etc/sysctl.conf
+/etc/eks/bootstrap.sh ${cluster_name} --kubelet-extra-args '--node-labels=is_worker=true'
+
+echo "net.ipv4.conf.default.rp_filter = 0" | tee -a /etc/sysctl.conf
+echo "net.ipv4.conf.all.rp_filter = 0" | tee -a /etc/sysctl.conf
+sudo sysctl -p
+
+sleep 15
+
+ls /sys/class/net/ > /tmp/ethList;cat /tmp/ethList |while read line ; do sudo ifconfig $line up; done
+grep eth /tmp/ethList |while read line ; do echo "ifconfig $line up" >> /etc/rc.d/rc.local; done
+systemctl enable rc-local
+chmod +x /etc/rc.d/rc.local
