@@ -59,12 +59,16 @@ resource "aws_iam_instance_profile" "eks_ip" {
 }
 
 locals {
-  kv = {
-    cluster_name = "${var.name}-c3"
+  cluster_name = "${var.name}-c3"
+  nkv = { for k, v in var.hsf_nodes : k => {
+    cluster_name = local.cluster_name
+    labels = join(",", [for lk,lv in v.labels: "${lk}=${lv}"] )
+    }
   }
 }
 
 data "template_cloudinit_config" "k8s" {
+  for_each          = var.hsf_nodes
   gzip          = true
   base64_encode = true
 
@@ -75,7 +79,7 @@ data "template_cloudinit_config" "k8s" {
       write_files = [
         {
           path        = "/var/lib/cloud/scripts/per-once/k8s.sh"
-          content     = templatefile("${path.module}/init/k8s.sh.tfpl", local.kv)
+          content     = templatefile("${path.module}/init/k8s.sh.tfpl", local.nkv[each.key])
           permissions = "0744"
         },
       ]
@@ -90,37 +94,43 @@ data "template_cloudinit_config" "k8s" {
   }
 }
 
-resource "aws_network_interface" "k8s-gw-m" {
-  count             = 1
+resource "aws_network_interface" "k8s-m" {
+  for_each          = var.hsf_nodes
   subnet_id         = module.vpc_eks.subnets["k8s-m-a"].id
   source_dest_check = false
   security_groups = [
     module.vpc_eks.sg_private_id,
     module.eks_c3.cluster_primary_security_group_id,
   ]
+  lifecycle {
+    ignore_changes = [tags]
+  }
 }
 
-resource "aws_network_interface" "k8s-ci-m" {
-  count             = 1
+resource "aws_network_interface" "k8s-ci" {
+  for_each          = var.hsf_nodes
   subnet_id         = module.vpc_eks.subnets["k8s-ci-a"].id
   source_dest_check = false
+  lifecycle {
+    ignore_changes = [tags]
+  }
 }
 
-resource "aws_instance" "k8s-gw" {
-  count         = 1
+resource "aws_instance" "k8s-nodes" {
+  for_each      = var.hsf_nodes
   ami           = data.aws_ami.eks.id
-  instance_type = "c5n.4xlarge"
+  instance_type = each.value.instance_type
   key_name      = var.key_name
 
   iam_instance_profile = aws_iam_instance_profile.eks_ip.id
 
   network_interface {
     device_index         = 0
-    network_interface_id = aws_network_interface.k8s-gw-m[count.index].id
+    network_interface_id = aws_network_interface.k8s-m[each.key].id
   }
   network_interface {
     device_index         = 1
-    network_interface_id = aws_network_interface.k8s-ci-m[count.index].id
+    network_interface_id = aws_network_interface.k8s-ci[each.key].id
   }
   # network_interface {
   #   device_index         = 2
@@ -128,12 +138,12 @@ resource "aws_instance" "k8s-gw" {
   # }
 
 
-  user_data_base64 = data.template_cloudinit_config.k8s.rendered
+  user_data_base64            = data.template_cloudinit_config.k8s[each.key].rendered
   user_data_replace_on_change = true
 
   tags = {
-    Name                                   = "${var.name}-gw-${count.index}"
-    "kubernetes.io/cluster/${var.name}-c3" = "owned"
+    Name                                          = "${var.name}-${each.key}"
+    "kubernetes.io/cluster/${local.cluster_name}" = "owned"
   }
   lifecycle {
     ignore_changes = [ami]

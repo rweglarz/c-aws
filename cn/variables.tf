@@ -29,7 +29,7 @@ variable "key_pair" {
 
 variable "cidr" {
   type    = string
-  default = "172.31.0.0/22"
+  default = "172.31.0.0/20"
 }
 
 variable "subnets" {
@@ -68,3 +68,7 @@ variable "ubuntu_version" {
 variable "panorama1_ip" { }
 variable "panorama2_ip" { }
 
+
+variable "hsf_nodes" {
+  default = {}
+}

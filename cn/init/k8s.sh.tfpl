@@ -8,7 +8,7 @@ echo -e '[Unit]\nDescription=dhcp for cni\n[Service]\nExecStart=/plugins/bin/dhc
 systemctl enable --now ipam-dhcp
 
 echo "vm.nr_hugepages = 1024" | tee -a /etc/sysctl.conf
-/etc/eks/bootstrap.sh ${cluster_name} --kubelet-extra-args '--node-labels=is_worker=true'
+/etc/eks/bootstrap.sh ${cluster_name} --kubelet-extra-args --node-labels=${labels}
 
 echo "net.ipv4.conf.default.rp_filter = 0" | tee -a /etc/sysctl.conf
 echo "net.ipv4.conf.all.rp_filter = 0" | tee -a /etc/sysctl.conf
