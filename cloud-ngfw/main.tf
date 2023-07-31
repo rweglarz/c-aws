@@ -6,7 +6,7 @@ terraform {
   required_providers {
     cloudngfwaws = {
       source = "PaloAltoNetworks/cloudngfwaws"
-      version = "1.0.9"
+      version = "2.0.1"
     }
   }
 }
