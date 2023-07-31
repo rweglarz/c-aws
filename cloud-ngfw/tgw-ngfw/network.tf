@@ -56,10 +56,13 @@ module "vpc-sec" {
   subnets = {
     "tgwa-a" : { "idx" : 0, "zone" : var.zones[0] },
     "tgwa-b" : { "idx" : 1, "zone" : var.zones[1] },
-    "ngfw-a" : { "idx" : 2, "zone" : var.zones[0] },
-    "ngfw-b" : { "idx" : 3, "zone" : var.zones[1] },
-    "natgw-a"  : { "idx" : 4, "zone" : var.zones[0] },
-    "natgw-b"  : { "idx" : 5, "zone" : var.zones[1] },
+    #"tgwa-c" : { "idx" : 2, "zone" : var.zones[2] },
+    "ngfw-a" : { "idx" : 3, "zone" : var.zones[0] },
+    "ngfw-b" : { "idx" : 4, "zone" : var.zones[1] },
+    #"ngfw-c" : { "idx" : 5, "zone" : var.zones[2] },
+    "natgw-a"  : { "idx" : 6, "zone" : var.zones[0] },
+    "natgw-b"  : { "idx" : 7, "zone" : var.zones[1] },
+    #"natgw-c"  : { "idx" : 8, "zone" : var.zones[2] },
   }
 }
 
