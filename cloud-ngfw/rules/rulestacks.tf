@@ -15,6 +15,40 @@ resource "cloudngfwaws_rulestack" "rs1" {
   }
 }
 
+resource "cloudngfwaws_custom_url_category" "rs1_cuc1" {
+  rulestack   = cloudngfwaws_rulestack.rs1.name
+  name        = "tf-custom-category"
+  description = "Also configured by Terraform"
+  url_list = [
+    "demo.com",
+    "github.com",
+    "www.github.com",
+    "github.githubassets.com",
+  ]
+  action = "alert"
+}
+
+resource "cloudngfwaws_custom_url_category" "rs1_block1" {
+  rulestack   = cloudngfwaws_rulestack.rs1.name
+  name        = "tf-custom-category-block"
+  description = "Also configured by Terraform"
+  url_list = [
+    "www.oracle.com/in/java/technologies/downloads/",
+  ]
+  action = "alert"
+}
+
+
+resource "cloudngfwaws_predefined_url_category_override" "rs1_block" {
+  for_each = toset([
+    "auctions",
+    "shareware-and-freeware",
+  ])
+  rulestack = cloudngfwaws_rulestack.rs1.name
+  name      = each.key
+  action    = "block"
+}
+
 resource "cloudngfwaws_security_rule" "r1" {
   rulestack   = cloudngfwaws_rulestack.rs1.name
   priority    = 100
@@ -100,10 +134,35 @@ resource "cloudngfwaws_security_rule" "client-allow-decrypt" {
   category {}
   protocol = "any"
 
-  decryption_rule_type = "SSLOutboundInspection"
+  #decryption_rule_type = "SSLOutboundInspection"
   action               = "Allow"
   logging              = true
 }
+
+# resource "cloudngfwaws_security_rule" "block-custom" {
+#   rulestack   = cloudngfwaws_rulestack.rs1.name
+#   priority    = 299
+#   rule_list   = "LocalRule"
+#   name        = "block-a-few"
+#   description = "Configured via Terraform"
+#   source {
+#     cidrs = ["any"]
+#   }
+#   destination {
+#     cidrs = ["any"]
+#   }
+#   applications = ["any"]
+#   category {
+#     url_category_names = [
+#       cloudngfwaws_custom_url_category.rs1_block1.name
+#     ]
+#   }
+#   protocol = "any"
+
+#   decryption_rule_type = "SSLOutboundInspection"
+#   action               = "DenyResetBoth"
+#   logging              = true
+# }
 
 resource "cloudngfwaws_security_rule" "any-allow-decrypt" {
   rulestack   = cloudngfwaws_rulestack.rs1.name
