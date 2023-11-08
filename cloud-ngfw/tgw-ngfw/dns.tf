@@ -2,31 +2,17 @@ data "aws_route53_zone" "w-aws" {
   name = var.dns_zone
 }
 
-resource "aws_route53_record" "client" {
+resource "aws_route53_record" "this" {
+  for_each = {
+    cngfw-client   = aws_eip.client.public_ip
+    cngfw-attacker = aws_eip.attacker.public_ip
+    cngfw-victim   = aws_eip.victim.public_ip
+  }
   zone_id = data.aws_route53_zone.w-aws.zone_id
-  name    = "cngfw-client"
+  name    = each.key
   type    = "A"
-  ttl     = 600
+  ttl     = 300
   records = [
-    aws_eip.client.public_ip
+    each.value
   ]
 }
-resource "aws_route53_record" "attacker" {
-  zone_id = data.aws_route53_zone.w-aws.zone_id
-  name    = "cngfw-attacker"
-  type    = "A"
-  ttl     = 600
-  records = [
-    aws_eip.attacker.public_ip
-  ]
-}
-resource "aws_route53_record" "victim" {
-  zone_id = data.aws_route53_zone.w-aws.zone_id
-  name    = "cngfw-victim"
-  type    = "A"
-  ttl     = 600
-  records = [
-    aws_eip.victim.public_ip
-  ]
-}
-
