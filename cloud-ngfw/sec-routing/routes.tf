@@ -37,13 +37,15 @@ resource "aws_route_table" "tgwa" {
     Name = "${var.name}-tgwa-${each.key}"
   }
 }
-resource "aws_route" "to_vpce" {
+
+resource "aws_route" "tgwa-dg_via_vpce" {
   for_each = { for k, v in local.vpce-map : v.availability_zone => v }
 
   route_table_id         = aws_route_table.tgwa[each.key].id
   destination_cidr_block = "0.0.0.0/0"
   vpc_endpoint_id        = each.value.vpce
 }
+
 resource "aws_route_table_association" "tgwa" {
   for_each = { for k, v in local.vpce-map : v.availability_zone => v }
 
@@ -69,7 +71,7 @@ resource "aws_route_table_association" "ngfw" {
   route_table_id = aws_route_table.ngfw[each.value.availability_zone].id
 }
 
-resource "aws_route" "ngfw-to_tgw" {
+resource "aws_route" "ngfw-172_via_tgw" {
   for_each = { for k, v in data.terraform_remote_state.tgw-ngfw.outputs.vpc-sec.subnets : k => v if length(regexall("-ngfw", v.tags.Name)) > 0 }
 
   route_table_id         = aws_route_table.ngfw[each.value.availability_zone].id
@@ -77,7 +79,7 @@ resource "aws_route" "ngfw-to_tgw" {
   transit_gateway_id     = data.terraform_remote_state.tgw-ngfw.outputs.tgw-id
 }
 
-resource "aws_route" "ngfw-to_natgw" {
+resource "aws_route" "ngfw-dg_via_natgw" {
   for_each = { for k, v in data.terraform_remote_state.tgw-ngfw.outputs.vpc-sec.subnets : k => v if length(regexall("-ngfw", v.tags.Name)) > 0 }
 
   route_table_id         = aws_route_table.ngfw[each.value.availability_zone].id
