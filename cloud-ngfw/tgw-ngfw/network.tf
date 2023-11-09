@@ -125,6 +125,18 @@ module "vpc-client" {
   }
 }
 
+resource "aws_vpc_dhcp_options" "client" {
+  domain_name_servers = aws_route53_resolver_endpoint.this.ip_address[*].ip
+  tags = {
+    Name = "${var.name}-client"
+  }
+}
+
+resource "aws_vpc_dhcp_options_association" "client" {
+  vpc_id          = module.vpc-client.vpc.id
+  dhcp_options_id = aws_vpc_dhcp_options.client.id
+}
+
 
 resource "aws_route_table_association" "attacker" {
   subnet_id      = module.vpc-attacker.subnets["attk"].id
