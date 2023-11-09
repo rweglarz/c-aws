@@ -63,6 +63,8 @@ module "vpc-sec" {
     "natgw-a"  : { "idx" : 6, "zone" : var.zones[0] },
     "natgw-b"  : { "idx" : 7, "zone" : var.zones[1] },
     #"natgw-c"  : { "idx" : 8, "zone" : var.zones[2] },
+    "route53-a"  : { "idx" : 9, "zone" : var.zones[0] },
+    "route53-b"  : { "idx" : 10, "zone" : var.zones[1] },
   }
 }
 
