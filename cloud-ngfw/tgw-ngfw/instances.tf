@@ -26,7 +26,7 @@ resource "aws_instance" "attacker" {
     network_interface_id = aws_network_interface.attacker.id
     device_index         = 0
   }
-
+  lifecycle { ignore_changes = [ ami ] }
   tags = {
     Name = "${var.name}-attacker"
   }
@@ -56,6 +56,7 @@ resource "aws_instance" "victim" {
     device_index         = 0
   }
 
+  lifecycle { ignore_changes = [ ami ] }
   tags = {
     Name = "${var.name}-victim"
   }
@@ -79,6 +80,7 @@ resource "aws_instance" "client" {
     module.vpc-client.sg_private_id,
     module.vpc-client.sg_public_id,
   ]
+  lifecycle { ignore_changes = [ ami ] }
   tags = {
     Name = "${var.name}-client"
   }
