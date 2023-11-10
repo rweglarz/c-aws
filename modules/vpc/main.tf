@@ -16,12 +16,6 @@ resource "aws_vpc" "this" {
   }
 }
 
-resource "aws_vpc_ipv4_cidr_block_association" "this" {
-  for_each   = { for l in var.extra_cidr_blocks: l => l }
-  vpc_id     = aws_vpc.this.id
-  cidr_block = each.value
-}
-
 resource "aws_internet_gateway" "this" {
   count  = (var.deploy_igw == true) ? 1 : 0
   vpc_id = aws_vpc.this.id
