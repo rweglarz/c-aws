@@ -3,6 +3,11 @@ resource "aws_cloudwatch_log_group" "this" {
   retention_in_days = var.log_retention_days
 }
 
+resource "aws_cloudwatch_log_group" "audit" {
+  name = "${var.log_group}-audit"
+  retention_in_days = var.log_retention_days
+}
+
 resource "cloudngfwaws_ngfw_log_profile" "this" {
   ngfw       = cloudngfwaws_ngfw.this.name
   account_id = var.account_id
