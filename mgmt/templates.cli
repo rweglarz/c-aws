@@ -1,0 +1,25 @@
+delete template vm-ha-ha2-eth1-1
+set template vm-ha-ha2-eth1-1 variable $ha2-local-ip type ip-netmask 1.1.1.1
+set template vm-ha-ha2-eth1-1 variable $ha2-gw type ip-netmask 1.1.1.1
+set template vm-ha-ha2-eth1-1 variable $ha2-netmask type ip-netmask 255.255.255.0
+set template vm-ha-ha2-eth1-1 variable $ha1-peer-ip type ip-netmask 1.1.1.1
+set template vm-ha-ha2-eth1-1 config  network interface ethernet ethernet1/1 ha 
+set template vm-ha-ha2-eth1-1 config  vsys vsys1 import network  
+set template vm-ha-ha2-eth1-1 config  deviceconfig high-availability interface ha1 port management
+set template vm-ha-ha2-eth1-1 config  deviceconfig high-availability interface ha2 netmask $ha2-netmask
+set template vm-ha-ha2-eth1-1 config  deviceconfig high-availability interface ha2 ip-address $ha2-local-ip
+set template vm-ha-ha2-eth1-1 config  deviceconfig high-availability interface ha2 gateway $ha2-gw
+set template vm-ha-ha2-eth1-1 config  deviceconfig high-availability interface ha2 port ethernet1/1
+set template vm-ha-ha2-eth1-1 config  deviceconfig high-availability interface ha2-backup 
+set template vm-ha-ha2-eth1-1 config  deviceconfig high-availability interface ha3 
+set template vm-ha-ha2-eth1-1 config  deviceconfig high-availability group group-id 42
+set template vm-ha-ha2-eth1-1 config  deviceconfig high-availability group mode active-passive passive-link-state auto
+set template vm-ha-ha2-eth1-1 config  deviceconfig high-availability group state-synchronization transport udp
+set template vm-ha-ha2-eth1-1 config  deviceconfig high-availability group state-synchronization ha2-keep-alive enabled yes
+set template vm-ha-ha2-eth1-1 config  deviceconfig high-availability group peer-ip $ha1-peer-ip
+set template vm-ha-ha2-eth1-1 config  deviceconfig high-availability group configuration-synchronization enabled no
+set template vm-ha-ha2-eth1-1 config  deviceconfig high-availability enabled yes
+set template vm-ha-ha2-eth1-1 settings default-vsys vsys1
+
+
+
