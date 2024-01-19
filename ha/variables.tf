@@ -31,6 +31,11 @@ variable "ha2z_cidr" {
   default = "172.31.2.0/24"
 }
 
+variable "tgw_cidr" {
+  type    = string
+  default = "172.31.16.0/24"
+}
+
 variable "pl-mgmt-mgmt_ips" {
   type = string
   default = "pl-02d9932acdc462a47"
@@ -76,5 +81,17 @@ variable "mgmt_ips" {
 }
 
 variable "dns_zone" {
+  type = string
+}
+
+variable "asn" {
+  default = {
+    aws  = "64512"
+    ha1z = "64521"
+    ha2z = "64522"
+  }
+}
+
+variable "psk" {
   type = string
 }

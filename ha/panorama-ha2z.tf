@@ -1,3 +1,17 @@
+locals {
+  aws_tunnel_ips = [
+    {
+       pan_tunnel_int = aws_vpn_connection.ha2z.tunnel1_cgw_inside_address
+       aws_tunnel_int = aws_vpn_connection.ha2z.tunnel1_vgw_inside_address
+       aws_public     = aws_vpn_connection.ha2z.tunnel1_address
+    },
+    {
+       pan_tunnel_int = aws_vpn_connection.ha2z.tunnel2_cgw_inside_address
+       aws_tunnel_int = aws_vpn_connection.ha2z.tunnel2_vgw_inside_address
+       aws_public     = aws_vpn_connection.ha2z.tunnel2_address
+    }
+  ]
+}
 resource "panos_device_group" "aws_ha2z" {
   name = "aws-ha2z"
 
@@ -164,6 +178,14 @@ resource "panos_panorama_tunnel_interface" "ha2z_tun11" {
   static_ips         = ["169.254.12.2/30"]
   management_profile = "ping"
 }
+resource "panos_panorama_tunnel_interface" "ha2z_aws" {
+  count = 2
+  template           = panos_panorama_template.ha2z.name
+  name               = "tunnel.${31+count.index}"
+  vsys               = "vsys1"
+  static_ips         = ["${local.aws_tunnel_ips[count.index].pan_tunnel_int}/30"]
+  management_profile = "ping"
+}
 resource "panos_panorama_template_variable" "aws_ha2z-eth1_2_ip" {
   template = panos_panorama_template.ha2z.name
   name     = "$eth1_2-ip"
@@ -205,6 +227,8 @@ resource "panos_zone" "ha2z_private" {
   interfaces = [
     panos_panorama_ethernet_interface.ha2z_eth1_3.name,
     panos_panorama_tunnel_interface.ha2z_tun11.name,
+    panos_panorama_tunnel_interface.ha2z_aws[0].name,
+    panos_panorama_tunnel_interface.ha2z_aws[1].name,
   ]
 }
 
@@ -224,6 +248,8 @@ resource "panos_virtual_router" "ha2z_vr1" {
     panos_panorama_ethernet_interface.ha2z_eth1_2.name,
     panos_panorama_ethernet_interface.ha2z_eth1_3.name,
     panos_panorama_tunnel_interface.ha2z_tun11.name,
+    panos_panorama_tunnel_interface.ha2z_aws[0].name,
+    panos_panorama_tunnel_interface.ha2z_aws[1].name,
   ]
 }
 
@@ -290,6 +316,73 @@ resource "panos_panorama_ipsec_tunnel" "ha2z_ha1z" {
   tunnel_interface = panos_panorama_tunnel_interface.ha2z_tun11.name
   anti_replay      = false
   ak_ike_gateway   = panos_panorama_ike_gateway.ha2z_ha1z.name
+}
+
+
+resource "panos_panorama_ike_gateway" "ha2z_aws" {
+  count = 2
+  template            = panos_panorama_template.ha2z.name
+  name                = "aws${count.index+1}"
+  peer_ip_type        = "ip"
+  peer_ip_value       = local.aws_tunnel_ips[count.index].aws_public
+  interface           = "ethernet1/2"
+  pre_shared_key      = var.psk
+  ikev1_exchange_mode = "main"
+  version             = "ikev2"
+
+  local_id_type  = "ipaddr"
+  local_id_value = one([for k, v in module.fw-ha2z_a.public_ips : v if length(regexall("internet", k)) > 0])
+  peer_id_type   = "ipaddr"
+  peer_id_value  = local.aws_tunnel_ips[count.index].aws_public
+
+  enable_nat_traversal              = true
+  nat_traversal_keep_alive          = 10
+  nat_traversal_enable_udp_checksum = true
+
+  enable_dead_peer_detection   = true
+  dead_peer_detection_interval = 2
+  dead_peer_detection_retry    = 5
+}
+resource "panos_panorama_ipsec_tunnel" "ha2z_aws" {
+  count = 2
+  name             = "aws${count.index+1}"
+  template         = panos_panorama_template.ha2z.name
+  tunnel_interface = panos_panorama_tunnel_interface.ha2z_aws[count.index].name
+  anti_replay      = false
+  ak_ike_gateway   = panos_panorama_ike_gateway.ha2z_aws[count.index].name
+}
+
+
+
+resource "panos_panorama_bgp" "ha2z" {
+  template         = panos_panorama_template.ha2z.name
+  virtual_router   = panos_virtual_router.ha2z_vr1.name
+  install_route    = true
+
+  router_id = "169.254.21.2"
+  as_number = var.asn["ha2z"]
+}
+resource "panos_panorama_bgp_peer_group" "ha2z-aws" {
+  template       = panos_panorama_template.ha2z.name
+  virtual_router = panos_virtual_router.ha2z_vr1.name
+  name           = "aws"
+  type           = "ebgp"
+  depends_on = [
+    panos_panorama_bgp.ha2z
+  ]
+}
+resource "panos_panorama_bgp_peer" "ha2z-aws" {
+  count = 2
+  template                = panos_panorama_template.ha2z.name
+  name                    = "aws${count.index+1}"
+  virtual_router          = panos_virtual_router.ha2z_vr1.name
+  bgp_peer_group          = panos_panorama_bgp_peer_group.ha2z-aws.name
+  peer_as                 = var.asn["aws"]
+  local_address_interface = panos_panorama_tunnel_interface.ha2z_aws[count.index].name
+  local_address_ip        = panos_panorama_tunnel_interface.ha2z_aws[count.index].static_ips[0]
+  peer_address_ip         = local.aws_tunnel_ips[count.index].aws_tunnel_int
+  max_prefixes            = "unlimited"
+  multi_hop               = 1
 }
 
 
