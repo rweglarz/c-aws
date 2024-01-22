@@ -385,6 +385,20 @@ resource "panos_panorama_bgp_peer" "ha2z-aws" {
   multi_hop               = 1
 }
 
+resource "panos_panorama_bgp_redist_rule" "ha2z" {
+  for_each = {
+    local  = var.ha2z_cidr
+    dummy1 = "192.168.21.0/24"
+    dummy2 = "192.168.22.0/24"
+    dummy3 = "192.168.23.0/24"
+  }
+  template        = panos_panorama_template.ha2z.name
+  virtual_router  = panos_virtual_router.ha2z_vr1.name
+  route_table     = "unicast"
+  name            = each.value
+
+  lifecycle { create_before_destroy = true }
+}
 
 resource "panos_security_rule_group" "ha2z_ipsec" {
   position_keyword = "bottom"

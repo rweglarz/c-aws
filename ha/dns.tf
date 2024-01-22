@@ -85,3 +85,12 @@ resource "aws_route53_record" "ha2z_client2" {
   ]
 }
 
+resource "aws_route53_record" "vpc1_client1" {
+  zone_id = data.aws_route53_zone.w-aws.zone_id
+  name    = "vpc1-client1"
+  type    = "A"
+  ttl     = 600
+  records = [
+    aws_eip.vpc1_client1.public_ip
+  ]
+}

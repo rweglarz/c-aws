@@ -36,6 +36,11 @@ variable "tgw_cidr" {
   default = "172.31.16.0/24"
 }
 
+variable "vpc1_cidr" {
+  type    = string
+  default = "172.31.17.0/24"
+}
+
 variable "pl-mgmt-mgmt_ips" {
   type = string
   default = "pl-02d9932acdc462a47"
