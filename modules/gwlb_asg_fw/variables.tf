@@ -17,6 +17,10 @@ variable "tgw" {
 
 variable "fw_version" {
     type = string
+
+variable "fw_ami_id" {
+    type = string
+    default = null
 }
 
 variable "fw_instance_type" {

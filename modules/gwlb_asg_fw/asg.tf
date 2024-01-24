@@ -69,7 +69,7 @@ resource "aws_launch_template" "this" {
   name          = var.name
   ebs_optimized = true
 
-  image_id      = data.aws_ami.pa_vm.id
+  image_id      = coalesce(var.fw_ami_id, data.aws_ami.pa_vm.id)
   instance_type = var.fw_instance_type
   iam_instance_profile {
     arn = var.iam_instance_profile
