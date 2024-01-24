@@ -38,7 +38,6 @@ resource "aws_autoscaling_group" "this" {
       desired_capacity,
     ]
   }
-  }
 }
 
 resource "aws_security_group" "fw" {
