@@ -23,6 +23,8 @@ resource "aws_lb_target_group" "this" {
   protocol    = "GENEVE"
   port        = "6081"
 
+  deregistration_delay = var.deregistration_delay
+
   health_check {
     path     = "/unauth/php/health.php"
     port     = 80

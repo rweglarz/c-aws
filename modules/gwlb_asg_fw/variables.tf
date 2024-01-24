@@ -17,6 +17,8 @@ variable "tgw" {
 
 variable "fw_version" {
     type = string
+    default = "10.1.9"
+}
 
 variable "fw_ami_id" {
     type = string
@@ -45,4 +47,8 @@ variable "iam_instance_profile" {
 
 variable "target_failover" {
     default = "no_rebalance"
+}
+
+variable "deregistration_delay" {
+    default = 0
 }
