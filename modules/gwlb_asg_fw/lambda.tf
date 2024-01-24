@@ -65,8 +65,8 @@ resource "aws_iam_role_policy_attachment" "lambda_role_attachment" {
 
 data "archive_file" "lambda" {
   type        = "zip"
-  source_file = "../modules/gwlb_asg_fw/lambda.py"
-  output_path = "../modules/gwlb_asg_fw/lambda_payload.zip"
+  source_file = "${path.module}/lambda.py"
+  output_path = "lambda_payload.zip"
 }
 resource "aws_lambda_function" "eni_lambda" {
   role    = aws_iam_role.lambda_iam_role.arn
@@ -75,7 +75,7 @@ resource "aws_lambda_function" "eni_lambda" {
   timeout = 60
 
   source_code_hash = data.archive_file.lambda.output_base64sha256
-  filename         = "../modules/gwlb_asg_fw/lambda_payload.zip"
+  filename         = "lambda_payload.zip"
   function_name    = "${var.name}-eni"
 
   environment {
@@ -119,6 +119,7 @@ resource "aws_lambda_permission" "allow_cloudwatch" {
   source_arn    = aws_cloudwatch_event_rule.watch_asg.arn
 }
 
+/*
 resource "aws_autoscaling_lifecycle_hook" "lh_launch" {
   name                   = "${var.name}-lh_launch"
   autoscaling_group_name = aws_autoscaling_group.this.name
@@ -126,6 +127,7 @@ resource "aws_autoscaling_lifecycle_hook" "lh_launch" {
   heartbeat_timeout      = 300
   lifecycle_transition   = "autoscaling:EC2_INSTANCE_LAUNCHING"
 }
+*/
 /*
 resource "aws_autoscaling_lifecycle_hook" "lh_terminate" {
   name                   = "${var.name}-lh_terminate"
