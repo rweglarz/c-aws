@@ -92,6 +92,7 @@ resource "aws_security_group" "mgmt" {
     Name = "${var.name}-mgmt-pub"
   }
 }
+
 resource "aws_security_group" "panorama" {
   description = "panorama traffic"
   vpc_id      = aws_vpc.mgmt.id
@@ -106,17 +107,9 @@ resource "aws_security_group" "panorama" {
     prefix_list_ids = [aws_ec2_managed_prefix_list.csp_nat_ips.id]
   }
   ingress {
-    description = "panorama"
-    from_port   = 3978
-    to_port     = 3978
-    protocol    = 6
-    cidr_blocks = ["172.16.0.0/12"]
-    prefix_list_ids = [aws_ec2_managed_prefix_list.csp_nat_ips.id]
-  }
-  ingress {
-    description = "dlsrvr"
-    from_port   = 28443
-    to_port     = 28443
+    description = "panorama,api,dlsrvr"
+    from_port   = 443
+    to_port     = 65535
     protocol    = 6
     cidr_blocks = ["172.16.0.0/12"]
     prefix_list_ids = [aws_ec2_managed_prefix_list.csp_nat_ips.id]
@@ -142,6 +135,7 @@ resource "aws_security_group" "panorama" {
     Name = "${var.name}-panorama"
   }
 }
+
 
 resource "aws_eip" "panorama1" {
   instance = aws_instance.panorama1.id
