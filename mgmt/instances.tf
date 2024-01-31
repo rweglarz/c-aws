@@ -2,6 +2,7 @@ locals {
   panorama1_ip   = cidrhost(aws_subnet.mgmt[0].cidr_block, 78)
   panorama1_ipv6 = cidrhost(aws_subnet.mgmt[0].ipv6_cidr_block, 78)
   panorama2_ip   = cidrhost(aws_subnet.mgmt[1].cidr_block, 28)
+  panorama3_ip   = cidrhost(aws_subnet.mgmt[1].cidr_block, 30)
 }
 
 resource "aws_instance" "panorama1" {
@@ -57,6 +58,7 @@ resource "aws_instance" "jumphost" {
   vpc_security_group_ids = [resource.aws_security_group.mgmt.id]
   key_name               = var.key_pair
   private_ip             = cidrhost(aws_subnet.mgmt[0].cidr_block, 22)
+  iam_instance_profile   = "cicd"
   lifecycle {
     ignore_changes = [
       ami,
