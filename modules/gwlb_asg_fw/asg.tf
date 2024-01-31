@@ -38,6 +38,27 @@ resource "aws_autoscaling_group" "this" {
       desired_capacity,
     ]
   }
+  # initial_lifecycle_hook {
+  #   name                 = "lh_launch"
+  #   default_result       = "ABANDON"
+  #   heartbeat_timeout    = 300
+  #   lifecycle_transition = "autoscaling:EC2_INSTANCE_LAUNCHING"
+  # }
+}
+
+resource "aws_autoscaling_lifecycle_hook" "lh_launch" {
+  name                   = "${var.name}-lh_launch"
+  autoscaling_group_name = aws_autoscaling_group.this.name
+  default_result         = "ABANDON"
+  heartbeat_timeout      = 300
+  lifecycle_transition   = "autoscaling:EC2_INSTANCE_LAUNCHING"
+}
+resource "aws_autoscaling_lifecycle_hook" "lh_terminate" {
+  name                   = "${var.name}-lh_terminate"
+  autoscaling_group_name = aws_autoscaling_group.this.name
+  default_result         = "ABANDON"
+  heartbeat_timeout      = 300
+  lifecycle_transition   = "autoscaling:EC2_INSTANCE_TERMINATING"
 }
 
 resource "aws_security_group" "fw" {
