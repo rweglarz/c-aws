@@ -7,7 +7,7 @@ resource "cloudngfwaws_rulestack" "rs1" {
     #anti_spyware = "BestPractice"
     #anti_virus = "None"
     #anti_spyware = "None"
-    #vulnerability = "None"
+    vulnerability = "BestPractice"
     url_filtering                = "Custom"
     outbound_trust_certificate   = "panka-trust"
     outbound_untrust_certificate = "panka-untrust"
@@ -42,6 +42,8 @@ resource "cloudngfwaws_custom_url_category" "rs1_block1" {
 resource "cloudngfwaws_predefined_url_category_override" "rs1_block" {
   for_each = toset([
     "auctions",
+    "high-risk",
+    "real-time-detection",
     "shareware-and-freeware",
   ])
   rulestack = cloudngfwaws_rulestack.rs1.name
@@ -59,7 +61,10 @@ resource "cloudngfwaws_security_rule" "r1" {
     cidrs = ["any"]
   }
   destination {
-    cidrs = ["10.1.1.0/24"]
+    cidrs = [
+      "10.1.1.0/24",
+      "10.1.2.0/24"
+    ]
   }
   category {}
   applications = ["web-browsing"]
