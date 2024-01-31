@@ -342,6 +342,8 @@ resource "panos_panorama_ike_gateway" "ha2z_aws" {
   enable_dead_peer_detection   = true
   dead_peer_detection_interval = 2
   dead_peer_detection_retry    = 5
+  enable_liveness_check        = true
+  liveness_check_interval      = 2
 }
 resource "panos_panorama_ipsec_tunnel" "ha2z_aws" {
   count = 2

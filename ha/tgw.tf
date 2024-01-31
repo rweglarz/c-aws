@@ -34,6 +34,12 @@ resource "aws_vpn_connection" "ha2z" {
   tunnel2_inside_cidr   = "169.254.6.4/30"
   tunnel1_preshared_key = var.psk
   tunnel2_preshared_key = var.psk
+  # tunnel1_dpd_timeout_action = "restart"
+  # tunnel2_dpd_timeout_action = "restart"
+  tunnel1_startup_action = "start"
+  tunnel2_startup_action = "start"
+}
+
 
 resource "aws_ec2_transit_gateway_route_table_association" "vpn_ha2z" {
   transit_gateway_attachment_id  = aws_vpn_connection.ha2z.transit_gateway_attachment_id
