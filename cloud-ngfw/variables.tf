@@ -19,7 +19,7 @@ variable "rule_stack" {
 }
 variable "cidr" {
   type    = string
-  default = "172.16.1.0/23"
+  default = "172.16.1.0/22"
 }
 variable "log_group" {
   type  = string

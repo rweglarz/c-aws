@@ -27,4 +27,4 @@ sudo docker info
 sudo docker container run -itd --rm --name vul-app-1 -p 8080:8080 us.gcr.io/panw-gcp-team-testing/qwiklab/pcc-log4shell/l4s-demo-app:1.0
 
 # Updating the /etc/hosts file to add a DNS entry for the attack server
-sudo docker exec vul-app-1 /bin/sh -c 'echo "172.16.1.21    att-svr" >> /etc/hosts'
+sudo docker exec vul-app-1 /bin/sh -c 'echo "172.16.2.21    att-svr" >> /etc/hosts'
