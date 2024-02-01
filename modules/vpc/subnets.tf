@@ -12,9 +12,10 @@ resource "aws_subnet" "this" {
   cidr_block        = try(each.value.cidr_block, cidrsubnet(aws_vpc.this.cidr_block, local.extra_mask_bits[each.key], each.value.idx))
   availability_zone = each.value.zone
 
-  tags = {
-    Name = "${var.name}-${each.key}"
-  }
+  tags = merge(
+    { Name = "${var.name}-${each.key}" },
+    { for tk,tv in lookup(each.value, "tags", {}): tk=>tv }
+  )
 
   depends_on = [ 
     aws_vpc_ipv4_cidr_block_association.this 
