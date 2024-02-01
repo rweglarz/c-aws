@@ -267,6 +267,15 @@ def waitForVPCE(vpces, vpc):
             return
 
 
+def getPanZoneFromSubnetTags(subnet_id):
+    client = boto3.client('ec2', region_name=region)
+    ds = client.describe_subnets(SubnetIds=[subnet_id])
+    for t in ds.get('Subnets')[0].get('Tags'):
+        if t['Key'] == 'pan_zone':
+            zone = t['Value']
+            return zone
+    return None
+    
 def getAwsVpceToPanZone():
     client = boto3.client('ec2', region_name=region)
     dv = client.describe_vpc_endpoints()
@@ -281,7 +290,12 @@ def getAwsVpceToPanZone():
                 vpce_zone[vpce] = zone
                 break
         else:
-            print("Did not find zone tag for {}".format(vpce))
+            subnet_id = e.get('SubnetIds')[0]
+            zone = getPanZoneFromSubnetTags(subnet_id)
+            if zone:
+                vpce_zone[vpce] = zone
+            else:
+                print("Did not find pan_zone on vpce or subnet {}".format(subnet_id))
     return vpce_zone
 
 
