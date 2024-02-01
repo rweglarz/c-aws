@@ -88,6 +88,15 @@ def parseShowPluginsVmseriesAwsGwlb(txt):
             mappings[vpce] = rm.group(2)
     return mappings
 
+def parseShowPluginsVmseriesAwsGwlbXML(xml):
+    mappings = {}
+    for v in xml.findall('./vpc-endpoints/vpc-endpoint'):
+        eid = v.find('id').text
+        interface = v.find('interface').text
+        mappings[eid] = interface
+    print(mappings)
+    return mappings
+
 
 def getFirewallsExistingVpceMappings(serial):
     params = copy.copy(base_params)
@@ -104,7 +113,11 @@ def getFirewallsExistingVpceMappings(serial):
         print("Failed to get mappings from {}".format(serial))
         print(resp)
         return {}
-    m = parseShowPluginsVmseriesAwsGwlb(xml_resp.find('./result').text)
+    if xml_resp.find('./result/vm_series') is not None:
+        print("Firewall with newer version")
+        m = parseShowPluginsVmseriesAwsGwlbXML(xml_resp.find('./result/vm_series/aws/gwlb'))
+    else:
+        m = parseShowPluginsVmseriesAwsGwlb(xml_resp.find('./result').text)
     return m
 
 
