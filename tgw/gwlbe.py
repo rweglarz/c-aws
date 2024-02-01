@@ -363,7 +363,7 @@ def main():
             # 1. query vpce on aws, get zone from tag
             endpoint_zone_mapping = getAwsVpceToPanZone()
             # 2. query panorama and gets the zone to interface mapping
-            interface_zone_mapping = getPanoramaZoneInterfaceMapping(args.dg)
+            interface_zone_mapping = getPanoramaZoneInterfaceMapping(args.ts)
             # 3. map the vpce via zone to interface
             ei = mapVpceToInterface(endpoint_zone_mapping, interface_zone_mapping)
         print(ei)
