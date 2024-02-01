@@ -316,7 +316,7 @@ def getPanoramaZoneInterfaceMapping(template):
     p = "/config/devices/entry[@name='localhost.localdomain']/"
     p += "template/entry[@name='{}']/".format(template)
     p += "config/devices/entry[@name='localhost.localdomain']/"
-    p += "vsys/entry[@name='vsys1']"
+    p += "vsys/entry[*]"
     params = copy.copy(base_params)
     params['type'] = 'config'
     params['action'] = 'get'
