@@ -55,3 +55,12 @@ variable "transit_gateway_route_table_id" {
   type    = string
   default = null
 }
+
+variable gwlb_service_name {
+  type = string
+}
+
+variable routing_scenario {
+  type = number
+  default = null
+}
