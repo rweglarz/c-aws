@@ -191,42 +191,54 @@ def manageVpceMappingsOnActiveFirewalls(serials, mappings):
         manageVpceMappingsOnFirewall(s, mappings)
 
 
-def manageVpceMappingsInLaunchTemplate(ltn, mappings):
-    new_mappings_txt = 'plugin-op-commands=panorama-licensing-mode-on,aws-gwlb-inspect:enable'
-    for v in sorted(mappings):
-        new_mappings_txt += ',aws-gwlb-associate-vpce:{}@{}'.format(v, mappings[v])
+def prepareNewLaunchTemplateString(old_launch_template, new_mappings):
+    # this assumes plugin-op-commands must exist - gwlb inspection is enabled via bootstrap
+    new_launch_template = ''
+    found_pocs = False
+    for ol in old_launch_template.splitlines():
+        m = re.match(r'^plugin-op-commands=(.*)', ol)
+        if not m:
+            new_launch_template+= ol + '\n'
+            continue
+        found_pocs = True
+        pocs = m[1]
+        nl = 'plugin-op-commands='
+        nle = []
+        for oc in pocs.split(','):
+            m = re.match(r'^aws-gwlb-associate-vpce:(.*)@(.*)', oc)
+            if not m:
+                nle.append(oc)
+        for v in sorted(new_mappings):
+            nle.append('aws-gwlb-associate-vpce:{}@{}'.format(v, new_mappings[v]))
+        nl+= ','.join(nle)
+        new_launch_template+= nl + '\n'
+    if not found_pocs:
+        raise Exception('plugin-op-commands not found in launch template')
+    return new_launch_template
+
+
+def manageVpceMappingsInLaunchTemplate(launch_template_name, mappings):
     client = boto3.client('ec2', region_name=region)
     try:
-        di = client.describe_launch_template_versions(LaunchTemplateName=ltn,
+        di = client.describe_launch_template_versions(LaunchTemplateName=launch_template_name,
                                                     Versions=['$Latest'])
     except botocore.exceptions.ClientError as e:
         if e.response['Error']['Code']=='InvalidLaunchTemplateName.NotFoundException':
-            print("Launch template {} does not exist".format(ltn))
+            print("Launch template {} does not exist".format(launch_template_name))
             sys.exit(1)
-        print("Error describing AWS launch template: {}".format(ltn))
+        print("Error describing AWS launch template: {}".format(launch_template_name))
         print(formatClientError(e))
         sys.exit(1)
     for v in di.get('LaunchTemplateVersions'):
         latest_ver = v.get('VersionNumber')
         ud = v.get('LaunchTemplateData').get('UserData')
-        lt = base64.b64decode(ud).decode()
-    nlt = ''
-    found_gwlb = False
-    for l in lt.splitlines():
-        m = re.match(r'plugin-op-commands.*', l)
-        if m:
-            if (l==new_mappings_txt):
-              print("Existing mappings are correct, launch template update is not needed")
-              return
-            nlt += new_mappings_txt
-            nlt += '\n'
-            found_gwlb = True
-        else:
-            nlt += l + '\n'
-    if not found_gwlb:
-      nlt += new_mappings_txt
-      nlt += '\n'
-    di = client.create_launch_template_version(LaunchTemplateName=ltn,
+        olt = base64.b64decode(ud).decode()
+
+    nlt = prepareNewLaunchTemplateString(olt, mappings)
+    if nlt==olt:
+        print("Existing mappings/launch template are correct, update is not needed")
+        return
+    di = client.create_launch_template_version(LaunchTemplateName=launch_template_name,
                                                LaunchTemplateData={
                                                    'UserData':
                                                    base64.b64encode(
@@ -235,7 +247,7 @@ def manageVpceMappingsInLaunchTemplate(ltn, mappings):
                                                SourceVersion=str(latest_ver))
     v = di.get('LaunchTemplateVersion').get('VersionNumber')
     print("set new version to: {}".format(v))
-    client.modify_launch_template(LaunchTemplateName=ltn,
+    client.modify_launch_template(LaunchTemplateName=launch_template_name,
                                   DefaultVersion=str(v))
 
 
