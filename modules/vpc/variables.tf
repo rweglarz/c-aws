@@ -57,10 +57,12 @@ variable "transit_gateway_route_table_id" {
 }
 
 variable gwlb_service_name {
-  type = string
+  type    = string
+  default = null
 }
 
 variable routing_scenario {
   type = number
   default = null
 }
+
