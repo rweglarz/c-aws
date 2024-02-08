@@ -63,8 +63,14 @@ variable "fw_instance_type" {
   default = "m5.xlarge"
   type    = string
 }
+
 variable "fw_version" {
-  default = "10.1.9"
+  default = null
+  type    = string
+}
+
+variable "linux_instance_type" {
+  default = "t2.small"
   type    = string
 }
 

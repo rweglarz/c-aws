@@ -81,26 +81,18 @@ resource "aws_route_table_association" "vpc1-s1_a" {
   route_table_id = module.vpc-vpc1.route_tables.via_mixed
 }
 
-resource "aws_instance" "vpc1_client1" {
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = "t2.micro"
+module "vpc1_client1" {
+  source = "../modules/linux"
+
+  name          = "${var.name}-vpc1_client1"
+  instance_type = var.linux_instance_type
   key_name      = var.key_pair
+
+  subnet_id  = module.vpc-vpc1.subnets["s1_a"].id
+  private_ip = cidrhost(module.vpc-vpc1.subnets["s1_a"].cidr_block, 5)
   vpc_security_group_ids = [
     module.vpc-vpc1.sg_public_id,
     module.vpc-vpc1.sg_private_id,
   ]
-  subnet_id = module.vpc-vpc1.subnets["s1_a"].id
-
-  private_ip                  = cidrhost(module.vpc-vpc1.subnets["s1_a"].cidr_block, 5)
-
-  tags = {
-    Name = "${var.name}-vpc1_client1"
-  }
 }
 
-resource "aws_eip" "vpc1_client1" {
-  instance = aws_instance.vpc1_client1.id
-  tags = {
-    Name = "${var.name}-vpc1_client1"
-  }
-}

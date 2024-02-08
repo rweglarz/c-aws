@@ -28,56 +28,35 @@ resource "aws_subnet" "ha2z_b" {
 }
 
 
-resource "aws_instance" "ha2z_client1" {
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = "t2.small"
-  subnet_id     = aws_subnet.ha2z_a["client1"].id
+
+module "ha2z_client1" {
+  source = "../modules/linux"
+
+  name          = "${var.name}-ha2z_client1"
+  instance_type = var.linux_instance_type
+  key_name      = var.key_pair
+
+  subnet_id  = aws_subnet.ha2z_a["client1"].id
+  private_ip = cidrhost(aws_subnet.ha2z_a["client1"].cidr_block, 10)
   vpc_security_group_ids = [
     module.vpc-ha2z.sg_public_id,
     module.vpc-ha2z.sg_private_id,
   ]
-  key_name   = var.key_pair
-  private_ip = cidrhost(aws_subnet.ha2z_a["client1"].cidr_block, 10)
-  lifecycle {
-    ignore_changes = [
-      ami,
-    ]
-  }
-  tags = {
-    Name = "${var.name}-ha2z_client2"
-  }
-}
-resource "aws_eip" "ha2z_client1" {
-  instance = aws_instance.ha2z_client1.id
-  tags = {
-    Name = "${var.name}-ha2z_client1"
-  }
 }
 
-resource "aws_instance" "ha2z_client2" {
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = "t2.small"
-  subnet_id     = aws_subnet.ha2z_b["client2"].id
+module "ha2z_client2" {
+  source = "../modules/linux"
+
+  name          = "${var.name}-ha2z_client2"
+  instance_type = var.linux_instance_type
+  key_name      = var.key_pair
+
+  subnet_id  = aws_subnet.ha2z_b["client2"].id
+  private_ip = cidrhost(aws_subnet.ha2z_b["client2"].cidr_block, 10)
   vpc_security_group_ids = [
     module.vpc-ha2z.sg_public_id,
     module.vpc-ha2z.sg_private_id,
   ]
-  key_name   = var.key_pair
-  private_ip = cidrhost(aws_subnet.ha2z_b["client2"].cidr_block, 10)
-  lifecycle {
-    ignore_changes = [
-      ami,
-    ]
-  }
-  tags = {
-    Name = "${var.name}-ha2z_client2"
-  }
-}
-resource "aws_eip" "ha2z_client2" {
-  instance = aws_instance.ha2z_client2.id
-  tags = {
-    Name = "${var.name}-ha2z_client2"
-  }
 }
 
 
@@ -86,7 +65,7 @@ module "fw-ha2z_a" {
   source = "../modules/vmseries"
 
   name             = "${var.name}-ha2z_a"
-  fw_instance_type = "m5.xlarge"
+  fw_instance_type = var.fw_instance_type
   fw_version       = var.fw_version
 
   iam_instance_profile = data.terraform_remote_state.mgmt.outputs.instance_profile-pan_ha-name
@@ -140,7 +119,7 @@ module "fw-ha2z_b" {
   source = "../modules/vmseries"
 
   name             = "${var.name}-ha2z_b"
-  fw_instance_type = "m5.xlarge"
+  fw_instance_type = var.fw_instance_type
   fw_version       = var.fw_version
 
   iam_instance_profile = data.terraform_remote_state.mgmt.outputs.instance_profile-pan_ha-name
