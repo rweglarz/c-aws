@@ -1,11 +1,10 @@
 resource "aws_instance" "this" {
   ami           = coalesce(var.ami, data.aws_ami.ubuntu.id)
-  instance_type = "t2.micro"
+  instance_type = var.instance_type
   user_data     = var.user_data
   key_name      = var.key_name
   subnet_id     = var.subnet_id
-
-  associate_public_ip_address = false
+  private_ip    = var.private_ip
 
   vpc_security_group_ids = var.vpc_security_group_ids
 

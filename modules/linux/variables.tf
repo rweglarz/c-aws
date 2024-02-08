@@ -6,7 +6,7 @@ variable "subnet_id" {
   type = string
 }
 
-variable "private_ip_address" {
+variable "private_ip" {
   type = string
 }
 
@@ -38,4 +38,9 @@ variable "associate_public_ip" {
 variable "vpc_security_group_ids" {
   type = list
   default = null
+}
+
+variable "instance_type" {
+  type    = string
+  default = "t2.micro"
 }
