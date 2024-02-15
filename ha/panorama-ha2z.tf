@@ -399,6 +399,9 @@ resource "panos_panorama_bgp_redist_rule" "ha2z" {
   route_table     = "unicast"
   name            = each.value
 
+  depends_on = [
+    panos_panorama_bgp.ha2z
+  ]
   lifecycle { create_before_destroy = true }
 }
 
