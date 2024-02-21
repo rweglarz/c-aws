@@ -62,8 +62,10 @@ def getSysInfo(serials):
         print(requests.get(pano_base_url, params=params, verify=False).content)
 
 
-def vpceNoToVpceId(no):
-    vpcex = format(no, '#019x')
+def fixVpceId(vpceid):
+    rm = re.match(r'vpce-([a-f0-9]+)', vpceid)
+    vpce_no = int(rm.group(1), 16)
+    vpcex = format(vpce_no, '#019x')
     vpce = 'vpce-' + vpcex[2:]
     return vpce
 
@@ -81,20 +83,30 @@ def parseShowPluginsVmseriesAwsGwlb(txt):
             continue
         if sm != 1:
             continue
-        rm = re.match(r'\s+vpce-([a-f0-9]+)\s+(ethernet.*[0-9])\s*$', l)
+        rm = re.match(r'\s+(vpce-[a-f0-9]+)\s+(ethernet.*[0-9])\s*$', l)
         if rm:
-            vpce_no = int(rm.group(1), 16)
-            vpce = vpceNoToVpceId(vpce_no)
+            vpce = fixVpceId(rm.group(1))
             mappings[vpce] = rm.group(2)
     return mappings
 
 def parseShowPluginsVmseriesAwsGwlbXML(xml):
     mappings = {}
+    try:
+        enabled = xml.findtext('enabled')
+        if enabled!="True2":
+            print("WARNING: GWLB not enabled, mappings cannot be verified")
+            return None
+    except:
+        print(etree.tostring(xml, pretty_print=True).decode())
+        raise Exception("ERROR: GWLB status unknown")
     for v in xml.findall('./vpc-endpoints/vpc-endpoint'):
         eid = v.find('id').text
         interface = v.find('interface').text
+        if 'vpce' in interface:
+            # workaround as we can randomly swap vpce and interface
+            interface,eid = eid,interface
+        eid = fixVpceId(eid)
         mappings[eid] = interface
-    print(mappings)
     return mappings
 
 
