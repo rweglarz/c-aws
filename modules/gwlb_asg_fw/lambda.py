@@ -79,4 +79,4 @@ def lambda_handler(event, context):
 
 
 def log(message):
-    print('{}Z {}'.format(datetime.utcnow().isoformat(), message))
+    print('{}'.format(message))
