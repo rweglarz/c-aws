@@ -77,6 +77,7 @@ def parseShowPluginsVmseriesAwsGwlb(txt):
         if "GWLB enabled" in l:
             if not "True" in l:
                 print("WARNING: GWLB not enabled, mappings cannot be verified")
+                return None
             continue
         if "VPC endpoint" in l:
             sm = 1
@@ -93,7 +94,7 @@ def parseShowPluginsVmseriesAwsGwlbXML(xml):
     mappings = {}
     try:
         enabled = xml.findtext('enabled')
-        if enabled!="True2":
+        if enabled!="True":
             print("WARNING: GWLB not enabled, mappings cannot be verified")
             return None
     except:
@@ -111,6 +112,10 @@ def parseShowPluginsVmseriesAwsGwlbXML(xml):
 
 
 def getFirewallsExistingVpceMappings(serial):
+    """
+    Returns:
+        - dictionary endpoint-interface pairs or None if gwlb is not enabled on firewall
+    """
     params = copy.copy(base_params)
     r = etree.Element('show')
     s = etree.SubElement(r, 'plugins')
@@ -122,11 +127,10 @@ def getFirewallsExistingVpceMappings(serial):
     resp = requests.get(pano_base_url, params=params, verify=False).content
     xml_resp = etree.fromstring(resp)
     if not xml_resp.attrib.get('status') == 'success':
-        print("Failed to get mappings from {}".format(serial))
         print(resp)
-        return {}
+        raise Exception("Failed to get mappings from {}".format(serial))
     if xml_resp.find('./result/vm_series') is not None:
-        print("Firewall with newer version")
+        #print("Firewall with newer panos version")
         m = parseShowPluginsVmseriesAwsGwlbXML(xml_resp.find('./result/vm_series/aws/gwlb'))
     else:
         m = parseShowPluginsVmseriesAwsGwlb(xml_resp.find('./result').text)
@@ -181,6 +185,9 @@ def deleteVpceMappingFromFirewall(serial, vpce, interface):
 
 def manageVpceMappingsOnFirewall(serial, mappings):
     existing_mappings = getFirewallsExistingVpceMappings(serial)
+    if existing_mappings is None:
+        # we might have not gotten mappings if gwlb is not enabled
+        return
     for v in mappings:
         if v in existing_mappings:
             if mappings[v] == existing_mappings[v]:
@@ -201,6 +208,7 @@ def manageVpceMappingsOnActiveFirewalls(serials, mappings):
     for s in serials:
         print("Verifying vpce mappings on {}".format(s))
         manageVpceMappingsOnFirewall(s, mappings)
+        print("Done with {}".format(s))
 
 
 def prepareNewLaunchTemplateString(old_launch_template, new_mappings):
