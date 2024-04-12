@@ -5,7 +5,7 @@ variable "name" {
 
 variable "fw_version" {
   type    = string
-  default = "10.2.6"
+  default = "10.2.8"
   nullable = false
 }
 
