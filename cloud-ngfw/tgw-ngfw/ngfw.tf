@@ -44,4 +44,5 @@ resource "cloudngfwaws_ngfw" "this" {
   }
 
   rulestack = var.rule_stack
+  link_id   = var.link_id
 }

@@ -17,6 +17,10 @@ variable "account_id" {
 variable "rule_stack" {
   type = string
 }
+variable "link_id" {
+  type   = string
+  default = null
+}
 variable "cidr" {
   type    = string
   default = "172.16.1.0/22"
