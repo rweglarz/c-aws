@@ -27,6 +27,20 @@ resource "cloudngfwaws_ngfw_log_profile" "this" {
     destination_type = "CloudWatchLogs"
     destination      = aws_cloudwatch_log_group.this.name
   }
+
+  cloudwatch_metric_fields = [
+    "Dataplane_CPU_Utilization",
+    "Dataplane_Packet_Buffer_Utilization",
+    "Connection_Per_Second",
+		"Session_Throughput_Kbps",
+    "Session_Throughput_Pps",
+    "Session_Active",
+    "Session_Utilization",
+		"BytesIn",
+    "BytesOut",
+    "PktsIn",
+    "PktsOut"
+  ]
 }
 
 resource "cloudngfwaws_ngfw" "this" {
