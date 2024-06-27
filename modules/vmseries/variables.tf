@@ -9,6 +9,10 @@ variable "fw_version" {
   nullable = false
 }
 
+variable "fw_license" {
+  default = "byol"
+}
+
 variable "fw_instance_type" {
   default = "m5.large"
   type    = string

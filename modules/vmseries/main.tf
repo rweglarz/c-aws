@@ -1,5 +1,9 @@
 resource "aws_instance" "this" {
-  ami                    = coalesce(var.ami, data.aws_ami.pa_vm.id)
+  ami = coalesce(
+    var.ami, 
+    var.fw_license=="byol" ? data.aws_ami.pa_vm_byol.id : null,
+    var.fw_license=="bnd2" ? data.aws_ami.pa_vm_bnd2.id : null,
+  )
   instance_type          = var.fw_instance_type
   vpc_security_group_ids = var.vpc_security_group_ids
 
