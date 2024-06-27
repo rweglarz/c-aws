@@ -69,6 +69,10 @@ variable "fw_version" {
   type    = string
 }
 
+variable "fw_ami" {
+  default = null
+}
+
 variable "linux_instance_type" {
   default = "t2.small"
   type    = string
