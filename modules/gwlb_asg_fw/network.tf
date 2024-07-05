@@ -153,10 +153,22 @@ resource "aws_route" "tgwa-dg" {
   destination_cidr_block = "0.0.0.0/0"
   vpc_endpoint_id        = aws_vpc_endpoint.outbound[count.index].id
 }
+resource "aws_route" "tgwa-10" {
+  count                  = length(var.availability_zones)
+  route_table_id         = aws_route_table.tgwa[count.index].id
+  destination_cidr_block = "10.0.0.0/8"
+  vpc_endpoint_id        = aws_vpc_endpoint.internal[count.index].id
+}
 resource "aws_route" "tgwa-172" {
   count                  = length(var.availability_zones)
   route_table_id         = aws_route_table.tgwa[count.index].id
   destination_cidr_block = "172.16.0.0/12"
+  vpc_endpoint_id        = aws_vpc_endpoint.internal[count.index].id
+}
+resource "aws_route" "tgwa-192" {
+  count                  = length(var.availability_zones)
+  route_table_id         = aws_route_table.tgwa[count.index].id
+  destination_cidr_block = "192.168.0.0/16"
   vpc_endpoint_id        = aws_vpc_endpoint.internal[count.index].id
 }
 
@@ -184,16 +196,40 @@ resource "aws_route_table_association" "gwlbe-outbound" {
   subnet_id      = aws_subnet.gwlbe-outbound[count.index].id
   route_table_id = aws_route_table.gwlbe-outbound[count.index].id
 }
-resource "aws_route" "gwlbe-internal-prv" {
+resource "aws_route" "gwlbe-internal-10" {
+  count                  = length(var.availability_zones)
+  route_table_id         = aws_route_table.gwlbe-internal[count.index].id
+  destination_cidr_block = "10.0.0.0/8"
+  transit_gateway_id     = var.tgw
+}
+resource "aws_route" "gwlbe-internal-172" {
   count                  = length(var.availability_zones)
   route_table_id         = aws_route_table.gwlbe-internal[count.index].id
   destination_cidr_block = "172.16.0.0/12"
   transit_gateway_id     = var.tgw
 }
-resource "aws_route" "gwlbe-outbound-prv" {
+resource "aws_route" "gwlbe-internal-192" {
+  count                  = length(var.availability_zones)
+  route_table_id         = aws_route_table.gwlbe-internal[count.index].id
+  destination_cidr_block = "192.168.0.0/16"
+  transit_gateway_id     = var.tgw
+}
+resource "aws_route" "gwlbe-outbound-10" {
+  count                  = length(var.availability_zones)
+  route_table_id         = aws_route_table.gwlbe-outbound[count.index].id
+  destination_cidr_block = "10.0.0.0/8"
+  transit_gateway_id     = var.tgw
+}
+resource "aws_route" "gwlbe-outbound-172" {
   count                  = length(var.availability_zones)
   route_table_id         = aws_route_table.gwlbe-outbound[count.index].id
   destination_cidr_block = "172.16.0.0/12"
+  transit_gateway_id     = var.tgw
+}
+resource "aws_route" "gwlbe-outbound-192" {
+  count                  = length(var.availability_zones)
+  route_table_id         = aws_route_table.gwlbe-outbound[count.index].id
+  destination_cidr_block = "192.168.0.0/16"
   transit_gateway_id     = var.tgw
 }
 resource "aws_route" "gwlbe-dg" {
