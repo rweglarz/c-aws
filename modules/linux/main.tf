@@ -6,6 +6,8 @@ resource "aws_instance" "this" {
   subnet_id     = var.subnet_id
   private_ip    = var.private_ip
 
+  iam_instance_profile = var.iam_instance_profile
+
   vpc_security_group_ids = var.vpc_security_group_ids
 
   lifecycle { ignore_changes = [ ami ] }
