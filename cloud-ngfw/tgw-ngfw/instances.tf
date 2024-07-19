@@ -21,7 +21,10 @@ resource "aws_instance" "attacker" {
   ami           = data.aws_ami.latest_ecs.id
   instance_type = "t2.micro"
   user_data     = file("i_attacker.sh")
-  key_name      = data.aws_key_pair.key_name.key_name
+
+  key_name             = data.aws_key_pair.key_name.key_name
+  iam_instance_profile = var.iam_instance_profile
+
   network_interface {
     network_interface_id = aws_network_interface.attacker.id
     device_index         = 0
@@ -50,7 +53,10 @@ resource "aws_instance" "victim" {
   ami           = data.aws_ami.latest_ecs.id
   instance_type = "t2.micro"
   user_data     = file("i_victim.sh")
-  key_name      = data.aws_key_pair.key_name.key_name
+
+  key_name             = data.aws_key_pair.key_name.key_name
+  iam_instance_profile = var.iam_instance_profile
+
   network_interface {
     network_interface_id = aws_network_interface.victim.id
     device_index         = 0
@@ -70,25 +76,38 @@ output "attacker" {
 }
 
 
-resource "aws_instance" "client" {
-  ami           = data.aws_ami.latest_ecs.id
-  instance_type = "t2.micro"
-  key_name      = data.aws_key_pair.key_name.key_name
-  subnet_id     = module.vpc-client.subnets["clnt"].id
-  private_ip    = cidrhost(module.vpc-client.subnets["clnt"].cidr_block, 5)
+module "client1" {
+  source = "../../modules/linux"
+
+  name     = "${var.name}-client1"
+  key_name = data.aws_key_pair.key_name.key_name
+
+  subnet_id            = module.vpc-client1.subnets["clnt"].id
+  private_ip           = cidrhost(module.vpc-client1.subnets["clnt"].cidr_block, 5)
+  associate_public_ip  = true
+
+  iam_instance_profile = var.iam_instance_profile
+
   vpc_security_group_ids = [
-    module.vpc-client.sg_private_id,
-    module.vpc-client.sg_public_id,
+    module.vpc-client1.sg_private_id,
+    module.vpc-client1.sg_public_id,
   ]
-  lifecycle { ignore_changes = [ ami ] }
-  tags = {
-    Name = "${var.name}-client"
-  }
-}
-resource "aws_eip" "client" {
-  instance = aws_instance.client.id
 }
 
-output "client" {
-  value = aws_eip.client.address
+module "client2" {
+  source = "../../modules/linux"
+
+  name     = "${var.name}-client2"
+  key_name = data.aws_key_pair.key_name.key_name
+
+  subnet_id            = module.vpc-client2.subnets["clnt"].id
+  private_ip           = cidrhost(module.vpc-client2.subnets["clnt"].cidr_block, 5)
+  associate_public_ip  = false
+
+  iam_instance_profile = var.iam_instance_profile
+
+  vpc_security_group_ids = [
+    module.vpc-client2.sg_private_id,
+    module.vpc-client2.sg_public_id,
+  ]
 }

@@ -32,8 +32,8 @@ resource "aws_ec2_transit_gateway_route_table_propagation" "victim-into-sec" {
   transit_gateway_attachment_id  = module.vpc-victim.transit_gateway_attachment_id
   transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.sec.id
 }
-resource "aws_ec2_transit_gateway_route_table_propagation" "client-into-sec" {
-  transit_gateway_attachment_id  = module.vpc-client.transit_gateway_attachment_id
+resource "aws_ec2_transit_gateway_route_table_propagation" "client1-into-sec" {
+  transit_gateway_attachment_id  = module.vpc-client1.transit_gateway_attachment_id
   transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.sec.id
 }
 
@@ -106,14 +106,33 @@ module "vpc-attacker" {
   }
 }
 
-module "vpc-client" {
+module "vpc-client1" {
   source = "../../modules/vpc"
 
-  name = "${var.name}-client"
+  name = "${var.name}-client1"
 
-  cidr_block              = cidrsubnet(var.cidr, 2, 3)
+  cidr_block              = cidrsubnet(var.cidr, 3, 4)
   public_mgmt_prefix_list = aws_ec2_managed_prefix_list.mgmt_ips.id
   deploy_igw              = true
+
+  connect_tgw                    = true
+  transit_gateway_id             = aws_ec2_transit_gateway.tgw.id
+  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.spoke.id
+
+  subnets = {
+    "tgwa" : { "idx" : 0, "zone" : var.zones[0] },
+    "clnt" : { "idx" : 1, "zone" : var.zones[0] },
+  }
+}
+
+module "vpc-client2" {
+  source = "../../modules/vpc"
+
+  name = "${var.name}-client2"
+
+  cidr_block              = cidrsubnet(var.cidr, 3, 5)
+  public_mgmt_prefix_list = aws_ec2_managed_prefix_list.mgmt_ips.id
+  deploy_igw              = false
 
   connect_tgw                    = true
   transit_gateway_id             = aws_ec2_transit_gateway.tgw.id
@@ -133,7 +152,7 @@ resource "aws_vpc_dhcp_options" "client" {
 }
 
 resource "aws_vpc_dhcp_options_association" "client" {
-  vpc_id          = module.vpc-client.vpc.id
+  vpc_id          = module.vpc-client1.vpc.id
   dhcp_options_id = aws_vpc_dhcp_options.client.id
 }
 
@@ -147,8 +166,8 @@ resource "aws_route_table_association" "victim" {
   route_table_id = module.vpc-victim.route_tables["via_mixed"]
 }
 resource "aws_route_table_association" "client" {
-  subnet_id      = module.vpc-client.subnets["clnt"].id
-  route_table_id = module.vpc-client.route_tables["pfx_via_igw"]
+  subnet_id      = module.vpc-client1.subnets["clnt"].id
+  route_table_id = module.vpc-client1.route_tables["pfx_via_igw"]
 }
 
 

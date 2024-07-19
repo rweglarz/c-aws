@@ -4,7 +4,7 @@ data "aws_route53_zone" "w-aws" {
 
 resource "aws_route53_record" "this" {
   for_each = {
-    cngfw-client   = aws_eip.client.public_ip
+    cngfw-client1  = module.client1.public_ip
     cngfw-attacker = aws_eip.attacker.public_ip
     cngfw-victim   = aws_eip.victim.public_ip
   }
