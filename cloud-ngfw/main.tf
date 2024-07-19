@@ -1,20 +1,20 @@
 provider "aws" {
   region  = var.region
-  profile = "cngfw"
+  profile = "default"
 }
 
 terraform {
   required_providers {
     cloudngfwaws = {
       source = "PaloAltoNetworks/cloudngfwaws"
-      version = "2.0.11"
+      version = "2.0.18"
     }
   }
 }
 
 provider "cloudngfwaws" {
   json_config_file = "cloudngfwaws_creds.json"
-  profile = "cngfw"
+  profile = "default"
 
   region = var.region
   host   = "api.${var.region}.aws.cloudngfw.paloaltonetworks.com"
