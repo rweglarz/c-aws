@@ -32,7 +32,7 @@ clean: $(call if_exist,.state.tgw,clean-sec) $(call if_exist,.state.sec,clean-tg
 		region=$$(terraform show -json | jq -r '.values.outputs.region.value') && \
 		echo $$vpcid $$region && \
 		cd ~/prog/ce-aws/tgw/ && \
-		AWS_PROFILE=cngfw python3 gwlbe.py --region $$region --vpc $$vpcid vpce-wait
+		python3 gwlbe.py --region $$region --vpc $$vpcid vpce-wait
 	$(touch) $@
 
 .state.sec: .state.vpce
