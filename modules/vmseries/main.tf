@@ -20,9 +20,9 @@ resource "aws_instance" "this" {
   key_name      = var.key_pair
   ebs_optimized = true
 
-  user_data = base64encode(join("\n", compact(concat(
+  user_data = join("\n", 
     [for k, v in var.bootstrap_options : "${k}=${v}"],
-  ))))
+  )
 
   tags = {
     Name = var.name
