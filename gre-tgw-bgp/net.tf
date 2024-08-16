@@ -45,6 +45,44 @@ module "vpc_hub" {
   }
 }
 
+resource "aws_network_acl" "deny_all" {
+  vpc_id = module.vpc_hub.vpc.id
+
+  egress {
+    protocol   = "all"
+    rule_no    = 100
+    action     = "deny"
+    cidr_block = "10.3.0.0/18"
+    from_port  = 0
+    to_port    = 0
+  }
+
+  ingress {
+    protocol   = "tcp"
+    rule_no    = 100
+    action     = "deny"
+    cidr_block = "10.3.0.0/18"
+    from_port  = 0
+    to_port    = 0
+  }
+
+  tags = {
+    Name = "${var.name}-deny-all"
+  }
+}
+
+resource "aws_network_acl_association" "block-fw1" {
+  count = try(var.block-fw.fw1, false) ? 1: 0
+  network_acl_id = aws_network_acl.deny_all.id
+  subnet_id      = module.vpc_hub.subnets.private-a.id
+}
+
+resource "aws_network_acl_association" "block-fw2" {
+  count = try(var.block-fw.fw2, false) ? 1: 0
+  network_acl_id = aws_network_acl.deny_all.id
+  subnet_id      = module.vpc_hub.subnets.private-b.id
+}
+
 module "vpc_jumphost" {
   source = "../modules/vpc"
 

@@ -109,6 +109,9 @@ resource "panos_panorama_bgp_peer" "fw1" {
   peer_address_ip         = each.value.tgw_ip
   max_prefixes            = "unlimited"
   multi_hop               = 2
+
+  keep_alive_interval = 1
+  hold_time           = 6
 }
 
 resource "panos_panorama_bgp_redist_rule" "fw1" {

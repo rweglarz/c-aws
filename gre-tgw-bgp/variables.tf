@@ -83,3 +83,10 @@ variable "envs" {
     }
   }
 }
+
+variable "block-fw" {
+  default = {
+    fw1 = false
+    fw2 = false
+  }
+}
