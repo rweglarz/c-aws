@@ -21,7 +21,7 @@ variable "key_name" {
 }
 
 variable "ubuntu_version" {
-  default = "22.04"
+  default = "24.04"
   type    = string
 }
 
