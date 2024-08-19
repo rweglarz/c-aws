@@ -55,6 +55,8 @@ resource "panos_panorama_gre_tunnel" "fw1" {
   local_address_value = format("%s/28", each.value.peer_address)
   peer_address        = each.value.transit_gateway_address
   tunnel_interface    = format("tunnel.%d", var.envs[each.key].idx)
+
+  depends_on = [ module.cfg_fw1 ]
 }
 
 
@@ -68,6 +70,8 @@ resource "panos_panorama_bgp" "fw1" {
   as_number = local.asn.fw
 
   allow_redistribute_default_route = true
+
+  depends_on = [ module.cfg_fw1 ]
 }
 
 resource "panos_panorama_bgp_peer_group" "fw1" {
