@@ -1,6 +1,8 @@
-# routing:
-#   workload dg via gwlbe
-#   rfc1918  via tgw
+# routing: setup for security vpc
+#   tgwa dg via gwlbe
+#   gwlbe dg via natgw
+#   fwpub dg via igw
+#   natgw dg via igw
 # vpc config:
   # subnets = {
   #   "tgwa-a"   : { "idx" :  0, "zone" : var.availability_zones[0] },
@@ -54,27 +56,51 @@ resource "aws_vpc_endpoint" "rs3-gwlbe" {
 
 
 resource "aws_route_table" "rs3-gwlbe" {
-  count = var.routing_scenario==3 ? 1 : 0
+  for_each = local.rs3.gwlbe
 
   vpc_id = aws_vpc.this.id
   tags = {
-    Name = "${var.name}-rs3-gwlbe"
+    Name = "${var.name}-rs3-gwlbe-${each.key}"
   }
 }
 
-resource "aws_route" "rs3-gwlbe" {
-  count = var.routing_scenario==3 ? 1 : 0
+resource "aws_route" "rs3-gwlbe-10" {
+  for_each = local.rs3.gwlbe
 
-  route_table_id         = aws_route_table.rs3-gwlbe[0].id
+  route_table_id         = aws_route_table.rs3-gwlbe[each.key].id
+  destination_cidr_block = "10.0.0.0/8"
+  transit_gateway_id     = var.transit_gateway_id
+}
+
+resource "aws_route" "rs3-gwlbe-172-16" {
+  for_each = local.rs3.gwlbe
+
+  route_table_id         = aws_route_table.rs3-gwlbe[each.key].id
+  destination_cidr_block = "172.16.0.0/12"
+  transit_gateway_id     = var.transit_gateway_id
+}
+
+resource "aws_route" "rs3-gwlbe-192-168" {
+  for_each = local.rs3.gwlbe
+
+  route_table_id         = aws_route_table.rs3-gwlbe[each.key].id
+  destination_cidr_block = "192.168.0.0/16"
+  transit_gateway_id     = var.transit_gateway_id
+}
+
+resource "aws_route" "rs3-gwlbe-dg" {
+  for_each = local.rs3.gwlbe
+
+  route_table_id         = aws_route_table.rs3-gwlbe[each.key].id
   destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.this[0].id
+  nat_gateway_id         = aws_nat_gateway.this[each.key].id
 }
 
 resource "aws_route_table_association" "rs3-gwlbe" {
   for_each = local.rs3.gwlbe
 
   subnet_id      = each.value.id
-  route_table_id = aws_route_table.rs3-gwlbe[0].id
+  route_table_id = aws_route_table.rs3-gwlbe[each.key].id
 }
 
 
@@ -83,7 +109,7 @@ resource "aws_route_table" "rs3-lambda" {
 
   vpc_id = aws_vpc.this.id
   tags = {
-    Name = "${var.name}-rs3-lambda"
+    Name = "${var.name}-rs3-lambda-${each.key}"
   }
 }
 
@@ -129,6 +155,33 @@ resource "aws_route_table_association" "rs3-fwprv" {
 }
 
 
+
+resource "aws_route_table" "rs3-fwpub" {
+  for_each = local.rs3.mgmt
+
+  vpc_id = aws_vpc.this.id
+  tags = {
+    Name = "${var.name}-rs3-fwpub-${each.key}"
+  }
+}
+
+resource "aws_route" "rs3-fwpub-dg" {
+  for_each = local.rs3.fwpub
+
+  route_table_id         = aws_route_table.rs3-fwpub[each.key].id
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.this[0].id
+}
+
+resource "aws_route_table_association" "rs3-fwpub" {
+  for_each = local.rs3.fwpub
+
+  subnet_id      = each.value.id
+  route_table_id = aws_route_table.rs3-fwpub[each.key].id
+}
+
+
+
 resource "aws_route_table" "rs3-mgmt" {
   for_each = local.rs3.mgmt
 
@@ -170,8 +223,16 @@ resource "aws_route_table" "rs3-natgw" {
 
   vpc_id = aws_vpc.this.id
   tags = {
-    Name = "${var.name}-rs3-natgw"
+    Name = "${var.name}-rs3-natgw-${each.key}"
   }
+}
+
+resource "aws_route" "rs3-natgw-172-16" {
+  for_each = local.rs3.gwlbe
+
+  route_table_id         = aws_route_table.rs3-natgw[each.key].id
+  destination_cidr_block = "172.16.0.0/12"
+  vpc_endpoint_id        = aws_vpc_endpoint.rs3-gwlbe[each.key].id
 }
 
 resource "aws_route" "rs3-natgw-dg" {
@@ -191,17 +252,27 @@ resource "aws_route_table_association" "rs3-natgw" {
 
 
 
-# resource "aws_route" "rs3-igw-workload" {
-#   for_each = local.rs3.workload
 
-#   route_table_id         = aws_route_table.rs3-igw[0].id
-#   destination_cidr_block = each.value.cidr_block
-#   vpc_endpoint_id        = aws_vpc_endpoint.rs3-gwlbe[each.key].id
-# }
+resource "aws_route_table" "rs3-tgwa" {
+  for_each = local.rs3.tgwa
 
-# resource "aws_route_table_association" "rs3-igw" {
-#   count = var.routing_scenario==3 ? 1 : 0
+  vpc_id = aws_vpc.this.id
+  tags = {
+    Name = "${var.name}-rs3-tgwa-${each.key}"
+  }
+}
 
-#   gateway_id     = aws_internet_gateway.this[0].id
-#   route_table_id = aws_route_table.rs3-igw[0].id
-# }
+resource "aws_route" "rs3-tgwa--dg" {
+  for_each = local.rs3.tgwa
+
+  route_table_id         = aws_route_table.rs3-tgwa[each.key].id
+  destination_cidr_block = "0.0.0.0/0"
+  vpc_endpoint_id        = aws_vpc_endpoint.rs3-gwlbe[each.key].id
+}
+
+resource "aws_route_table_association" "rs3-tgwa" {
+  for_each = local.rs3.tgwa
+
+  subnet_id      = each.value.id
+  route_table_id = aws_route_table.rs3-tgwa[each.key].id
+}
