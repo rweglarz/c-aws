@@ -104,37 +104,29 @@ resource "aws_route_table_association" "rs3-lambda" {
 
 
 
-# resource "aws_route_table" "rs3-workload" {
-#   for_each = local.rs3.workload
+resource "aws_route_table" "rs3-fwprv" {
+  for_each = local.rs3.fwprv
 
-#   vpc_id = aws_vpc.this.id
-#   tags = {
-#     Name = "${var.name}-rs3-workload-${each.key}"
-#   }
-# }
+  vpc_id = aws_vpc.this.id
+  tags = {
+    Name = "${var.name}-rs3-fwprv-${each.key}"
+  }
+}
 
-# resource "aws_route" "rs3-workload-dg" {
-#   for_each = local.rs3.workload
+resource "aws_route" "rs3-fwprv-172-16" {
+  for_each = local.rs3.fwprv
 
-#   route_table_id         = aws_route_table.rs3-workload[each.key].id
-#   destination_cidr_block = "0.0.0.0/0"
-#   vpc_endpoint_id        = aws_vpc_endpoint.rs3-gwlbe[each.key].id
-# }
+  route_table_id         = aws_route_table.rs3-fwprv[each.key].id
+  destination_cidr_block = "172.16.0.0/12"
+  transit_gateway_id     = var.transit_gateway_id
+}
 
-# resource "aws_route" "rs3-workload-172-16" {
-#   for_each = local.rs3.workload
+resource "aws_route_table_association" "rs3-fwprv" {
+  for_each = local.rs3.fwprv
 
-#   route_table_id         = aws_route_table.rs3-workload[each.key].id
-#   destination_cidr_block = "172.16.0.0/12"
-#   transit_gateway_id     = var.transit_gateway_id
-# }
-
-# resource "aws_route_table_association" "rs3-workload" {
-#   for_each = local.rs3.workload
-
-#   subnet_id      = each.value.id
-#   route_table_id = aws_route_table.rs3-workload[each.key].id
-# }
+  subnet_id      = each.value.id
+  route_table_id = aws_route_table.rs3-fwprv[each.key].id
+}
 
 
 resource "aws_route_table" "rs3-mgmt" {
