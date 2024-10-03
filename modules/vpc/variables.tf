@@ -39,19 +39,37 @@ variable "subnets" {
   default = {}
 }
 
+variable "appliance_mode" {
+  type    = bool
+  default = null # implied false
+}
+
 variable "connect_tgw" {
   type    = bool
   default = false
 }
 variable "tgw_appliance_mode" {
   type    = bool
-  default = false
+  default = null # implied false
 }
 variable "transit_gateway_id" {
   type    = string
   default = null
 }
 variable "transit_gateway_route_table_id" {
+  type    = string
+  default = null
+}
+
+variable "connect_cwan" {
+  type    = bool
+  default = false
+}
+variable "core_network_arn" {
+  type    = string
+  default = null
+}
+variable "core_network_id" {
   type    = string
   default = null
 }
