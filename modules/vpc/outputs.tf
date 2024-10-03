@@ -3,6 +3,13 @@ output "vpc" {
 }
 
 
+output "security_groups" {
+  value = {
+    private     = aws_security_group.private.id
+    public_mgmt = aws_security_group.public.id
+    wide_open   = aws_security_group.open.id
+  }
+}
 output "sg_public_id" {
   value = aws_security_group.public.id
 }
