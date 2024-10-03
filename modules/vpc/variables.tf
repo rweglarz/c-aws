@@ -66,3 +66,6 @@ variable routing_scenario {
   default = null
 }
 
+variable tags {
+  default = null
+}

@@ -11,9 +11,12 @@ resource "aws_vpc" "this" {
 
   enable_dns_hostnames = var.enable_dns_hostnames
 
-  tags = {
-    Name = var.name
-  }
+  tags = merge(
+    {
+      Name = var.name
+    },
+    var.tags
+  )
 }
 
 resource "aws_vpc_ipv4_cidr_block_association" "this" {
