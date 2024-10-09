@@ -16,4 +16,8 @@ resource "cloudngfwaws_account_onboarding_stack" "account2" {
   account_id = data.aws_caller_identity.account2.account_id
   endpoint_mode = "No"
   decryption_cert = "None"
+
+  depends_on = [ 
+    aws_iam_role_policy_attachment.account2
+  ]
 }
