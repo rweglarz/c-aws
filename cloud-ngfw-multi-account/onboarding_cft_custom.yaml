@@ -139,53 +139,53 @@ Resources:
            PolicyName: ServiceManagedEndpoint
 
 
-  # NetworkMonitoringRole:
-  #  Type: 'AWS::IAM::Role'
-  #  Metadata:
-  #    cfn-lint:
-  #      config:
-  #        ignore_checks:
-  #          - EIAMPolicyWildcardResource
-  #        ignore_reasons:
-  #          EIAMPolicyWildcardResource: Resource '*' is required by 'elasticloadbalancing:DescribeTags'.
-  #  Properties:
-  #    RoleName: PaloAltoNetworks-CloudNGFW-NetworkMonitoringRole
-  #    AssumeRolePolicyDocument:
-  #      Statement:
-  #      - Action: 'sts:AssumeRole'
-  #        Effect: Allow
-  #        Principal:
-  #          AWS:
-  #            - Fn::Sub: arn:aws:iam::${TrustedAccount}:root
-  #        Condition:
-  #          StringEquals:
-  #             sts:ExternalId: !Ref ExternalId
-  #        Sid: ''
-  #      Version: '2012-10-17'
-  #    Path: "/"
-  #    Policies:
-  #      - PolicyDocument:
-  #          Statement:
-  #          - Action:
-  #            - 'ec2:DescribeVpcs'
-  #            - 'ec2:DescribeNetworkInterfaces'
-  #            - 'ec2:DescribeSecurityGroups'
-  #            - 'ec2:DescribeInstances'
-  #            - 'ec2:DescribeVpcEndpoints'
-  #            - 'ec2:DescribeSubnets'
-  #            - 'ec2:DescribeManagedPrefixLists'
-  #            - 'elasticloadbalancing:DescribeLoadBalancers'
-  #            - 'elasticloadbalancing:DescribeTags'
-  #            Effect: Allow
-  #            Resource: "*"
-  #          - Action:
-  #            - 'ec2:GetManagedPrefixListAssociations'
-  #            - 'ec2:GetManagedPrefixListEntries'
-  #            Effect: Allow
-  #            Resource:
-  #            - Fn::Sub: arn:${AWS::Partition}:ec2:*:*:prefix-list/*
-  #          Version: '2012-10-17'
-  #        PolicyName: NetworkMonitoring
+  NetworkMonitoringRole:
+   Type: 'AWS::IAM::Role'
+   Metadata:
+     cfn-lint:
+       config:
+         ignore_checks:
+           - EIAMPolicyWildcardResource
+         ignore_reasons:
+           EIAMPolicyWildcardResource: Resource '*' is required by 'elasticloadbalancing:DescribeTags'.
+   Properties:
+     RoleName: PaloAltoNetworks-CloudNGFW-NetworkMonitoringRole
+     AssumeRolePolicyDocument:
+       Statement:
+       - Action: 'sts:AssumeRole'
+         Effect: Allow
+         Principal:
+           AWS:
+             - Fn::Sub: arn:aws:iam::${TrustedAccount}:root
+         Condition:
+           StringEquals:
+              sts:ExternalId: !Ref ExternalId
+         Sid: ''
+       Version: '2012-10-17'
+     Path: "/"
+     Policies:
+       - PolicyDocument:
+           Statement:
+           - Action:
+             - 'ec2:DescribeVpcs'
+             - 'ec2:DescribeNetworkInterfaces'
+             - 'ec2:DescribeSecurityGroups'
+             - 'ec2:DescribeInstances'
+             - 'ec2:DescribeVpcEndpoints'
+             - 'ec2:DescribeSubnets'
+             - 'ec2:DescribeManagedPrefixLists'
+             - 'elasticloadbalancing:DescribeLoadBalancers'
+             - 'elasticloadbalancing:DescribeTags'
+             Effect: Allow
+             Resource: "*"
+           - Action:
+             - 'ec2:GetManagedPrefixListAssociations'
+             - 'ec2:GetManagedPrefixListEntries'
+             Effect: Allow
+             Resource:
+             - Fn::Sub: arn:${AWS::Partition}:ec2:*:*:prefix-list/*
+           Version: '2012-10-17'
+         PolicyName: NetworkMonitoring
 
 
   CustomNotificationLambda:
