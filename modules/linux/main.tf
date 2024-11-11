@@ -11,9 +11,12 @@ resource "aws_instance" "this" {
   vpc_security_group_ids = var.vpc_security_group_ids
 
   lifecycle { ignore_changes = [ ami ] }
-  tags = {
-    Name = var.name
-  }
+  tags = merge(
+    {
+      Name = var.name
+    },
+    var.tags,
+  )
 }
 
 resource "aws_eip" "this" {

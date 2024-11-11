@@ -49,3 +49,7 @@ variable "iam_instance_profile" {
   type = string
   default = null
 }
+
+variable "tags" {
+  default = null
+}
