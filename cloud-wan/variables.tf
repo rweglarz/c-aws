@@ -26,11 +26,6 @@ variable "pl-mgmt-mgmt_ips" {
     us-east-1    = "pl-063addd981c50458e"
   }
 }
-variable "pl-mgmt-csp_nat_ips" {
-  type = string
-  default = "pl-029b5d80e69d9bc9e"
-}
-
 
 variable "bootstrap_options" {
   type = map(string)
@@ -52,6 +47,9 @@ variable "dns_zone" {
   type = string
 }
 
-variable "psk" {
-  type = string
+variable "gcp_project" {
+  default = null
+}
+variable "gcp_panorama_vpc_id" {
+  default = null
 }

@@ -4,7 +4,7 @@ data "aws_networkmanager_core_network_policy_document" "this" {
     asn_ranges       = ["64515-64520"]
 
     edge_locations {
-      location = "eu-central-1"
+      location = "us-east-1"
       asn      = 64515
     }
     edge_locations {
@@ -12,7 +12,7 @@ data "aws_networkmanager_core_network_policy_document" "this" {
       asn      = 64516
     }
     edge_locations {
-      location = "us-east-1"
+      location = "eu-central-1"
       asn      = 64517
     }
   }
@@ -20,6 +20,7 @@ data "aws_networkmanager_core_network_policy_document" "this" {
   segments {
     name                          = "prod"
     require_attachment_acceptance = false
+    isolate_attachments           = true
   }
   segments {
     name                          = "dev"
@@ -28,6 +29,26 @@ data "aws_networkmanager_core_network_policy_document" "this" {
   segments {
     name                          = "other"
     require_attachment_acceptance = false
+  }
+
+  network_function_groups {
+    name = "security"
+    require_attachment_acceptance = false
+  }
+
+
+  attachment_policies {
+    rule_number     = 1
+    condition_logic = "or"
+    conditions {
+      type     = "tag-value"
+      operator = "equals"
+      key      = "env"
+      value    = "security"
+    }
+    action {
+      add_to_network_function_group = "security"
+    }
   }
 
   attachment_policies {
@@ -69,6 +90,20 @@ data "aws_networkmanager_core_network_policy_document" "this" {
     action {
       association_method = "constant"
       segment            = "other"
+    }
+  }
+
+  segment_actions {
+    action  = "send-via"
+    segment = "dev"
+    mode    = "single-hop"
+    when_sent_to {
+      segments = [
+        "prod"
+      ]
+    }
+    via {
+      network_function_groups = ["security"]
     }
   }
 }
