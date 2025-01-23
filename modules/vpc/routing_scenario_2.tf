@@ -1,5 +1,6 @@
 # routing:
 #   workload dg via gwlbe
+#   gwlbe dg via igw
 #   rfc1918  via tgw
 # vpc config:
 #   subnets = {
