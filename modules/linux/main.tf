@@ -9,6 +9,7 @@ resource "aws_instance" "this" {
   iam_instance_profile = var.iam_instance_profile
 
   vpc_security_group_ids = var.vpc_security_group_ids
+  source_dest_check      = var.source_dest_check
 
   lifecycle { ignore_changes = [ ami ] }
   tags = merge(

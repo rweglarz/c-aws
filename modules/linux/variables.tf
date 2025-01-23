@@ -53,3 +53,7 @@ variable "iam_instance_profile" {
 variable "tags" {
   default = null
 }
+
+variable "source_dest_check" {
+  default = true
+}
