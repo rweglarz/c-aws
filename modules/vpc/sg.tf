@@ -75,3 +75,33 @@ resource "aws_security_group" "open" {
 }
 
 
+resource "aws_security_group" "managed_devices" {
+  vpc_id      = aws_vpc.this.id
+  name        = "${var.name}-managed-devices"
+  description = "managed-devices"
+
+  ingress {
+    from_port   = 3978
+    to_port     = 3978
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "tcp-3978"
+  }
+  ingress {
+    from_port   = 28443
+    to_port     = 28443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "tcp-3978"
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${var.name}-managed-devices"
+  }
+}

@@ -5,9 +5,10 @@ output "vpc" {
 
 output "security_groups" {
   value = {
-    private     = aws_security_group.private.id
-    public_mgmt = aws_security_group.public.id
-    wide_open   = aws_security_group.open.id
+    private         = aws_security_group.private.id
+    public_mgmt     = aws_security_group.public.id
+    wide_open       = aws_security_group.open.id
+    managed_devices = aws_security_group.managed_devices.id
   }
 }
 output "sg_public_id" {
