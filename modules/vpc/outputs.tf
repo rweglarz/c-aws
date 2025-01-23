@@ -42,6 +42,14 @@ output "route_tables" {
   }
 }
 
+output "customizable_route_tables" {
+  value = {
+    rs7-corea = {
+      for k, v in aws_route_table.rs7-corea: k => v.id
+    }
+  }
+}
+
 output "nat_gateways" {
   value = aws_nat_gateway.this
 }
