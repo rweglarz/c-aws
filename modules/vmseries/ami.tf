@@ -10,7 +10,7 @@ data "aws_ami" "pa_vm_byol" {
     name   = "name"
     values = ["PA-VM-AWS-${var.fw_version}*"]
   }
-  #name_regex       = "^myami-\\d{3}"
+  name_regex = "^PA-VM-AWS-${var.fw_version}-[[:alnum:]]{8}-([[:alnum:]]{4}-){3}[[:alnum:]]{12}$"
 }
 
 
