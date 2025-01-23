@@ -41,7 +41,7 @@ variable "subnets" {
 
 variable "appliance_mode" {
   type    = bool
-  default = null # implied false
+  default = false
 }
 
 variable "connect_tgw" {
@@ -50,7 +50,7 @@ variable "connect_tgw" {
 }
 variable "tgw_appliance_mode" {
   type    = bool
-  default = null # implied false
+  default = false
 }
 variable "transit_gateway_id" {
   type    = string

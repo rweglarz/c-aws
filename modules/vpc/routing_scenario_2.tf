@@ -82,7 +82,7 @@ resource "aws_route" "rs2-workload-dg" {
 }
 
 resource "aws_route" "rs2-workload-172-16" {
-  for_each = local.rs2.workload
+  for_each = { for k,v in local.rs2.workload: k => v if var.connect_tgw }
 
   route_table_id         = aws_route_table.rs2-workload[each.key].id
   destination_cidr_block = "172.16.0.0/12"

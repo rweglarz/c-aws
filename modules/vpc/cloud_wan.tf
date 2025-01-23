@@ -6,7 +6,7 @@ resource "aws_networkmanager_vpc_attachment" "cwan" {
   vpc_arn         = aws_vpc.this.arn
 
   options {
-    appliance_mode_support = try(var.appliance_mode, false)
+    appliance_mode_support = var.appliance_mode
   }
   tags = merge(
     {
