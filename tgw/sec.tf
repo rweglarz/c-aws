@@ -11,8 +11,10 @@ module "mfw" {
   key_pair             = var.key_pair
   bootstrap_options = merge(
     var.bootstrap_options["common"],
-    var.bootstrap_options["pan_prv"],
+    var.bootstrap_options["pan_pub"],
+    # var.bootstrap_options["pan_prv"],
     var.bootstrap_options["gwlb"],
+    # var.bootstrap_options["redis"],
   )
   desired_capacity = 0
   target_failover  = var.target_failover

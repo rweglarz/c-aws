@@ -83,3 +83,10 @@ variable "dns_zone" {
 variable "target_failover" {
   default = "no_rebalance"
 }
+
+variable "gcp_project" {
+  default = null
+}
+variable "gcp_panorama_vpc_id" {
+  default = null
+}
