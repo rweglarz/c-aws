@@ -1,11 +1,12 @@
 variable "region" {
   type    = string
-  default = "us-east-1"
+  default = "eu-west-1"
 }
 variable "zones" {
   default = [
-    "us-east-1a",
-    "us-east-1b",
+    "eu-west-1a",
+    "eu-west-1b",
+    "eu-west-1c",
   ]
 }
 variable "name" {
