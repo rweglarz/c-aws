@@ -33,6 +33,14 @@ resource "aws_route" "rs1-workload-dg" {
   transit_gateway_id     = var.transit_gateway_id
 }
 
+resource "aws_route" "rs1-workload-dg-ipv6" {
+  count = (var.routing_scenario==1 && var.dual_stack) ? 1 : 0
+
+  route_table_id              = aws_route_table.rs1-workload[0].id
+  destination_ipv6_cidr_block = "::/0"
+  transit_gateway_id          = var.transit_gateway_id
+}
+
 resource "aws_route" "rs1-workload-mgmt" {
   count = var.routing_scenario==1 ? 1 : 0
 

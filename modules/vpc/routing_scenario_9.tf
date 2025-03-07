@@ -28,11 +28,13 @@
 locals {
   rs9 = {
     tgwa = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==9) && strcontains(k, "tgwa-")) }
+    tgwa6 = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==9 && var.dual_stack) && strcontains(k, "tgwa-")) }
     lambda = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==9) && strcontains(k, "lambda-")) }
     mgmt = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==9) && strcontains(k, "mgmt-")) }
     fwprv = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==9) && strcontains(k, "fwprv-")) }
     fwpub = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==9) && strcontains(k, "fwpub-")) }
     gwlbe = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==9) && strcontains(k, "gwlbe-")) }
+    gwlbe6 = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==9 && var.dual_stack) && strcontains(k, "gwlbe-")) }
     natgw = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==9) && strcontains(k, "natgw-")) }
   }
 }
@@ -46,6 +48,7 @@ resource "aws_vpc_endpoint" "rs9-gwlbe" {
   vpc_id            = aws_vpc.this.id
   service_name      = var.gwlb_service_name
   vpc_endpoint_type = "GatewayLoadBalancer"
+  ip_address_type   = var.dual_stack ? "dualstack" : "ipv4"
 
   tags = {
     Name = "${var.name}-rs9-gwlbe-${each.key}"
@@ -86,6 +89,14 @@ resource "aws_route" "rs9-gwlbe-192-168" {
   route_table_id         = aws_route_table.rs9-gwlbe[each.key].id
   destination_cidr_block = "192.168.0.0/16"
   transit_gateway_id     = var.transit_gateway_id
+}
+
+resource "aws_route" "rs9-gwlbe-fd" {
+  for_each = local.rs9.gwlbe6
+
+  route_table_id              = aws_route_table.rs9-gwlbe[each.key].id
+  destination_ipv6_cidr_block = "fd00::/8"
+  transit_gateway_id          = var.transit_gateway_id
 }
 
 resource "aws_route" "rs9-gwlbe-dg" {
@@ -268,6 +279,14 @@ resource "aws_route" "rs9-tgwa--dg" {
   route_table_id         = aws_route_table.rs9-tgwa[each.key].id
   destination_cidr_block = "0.0.0.0/0"
   vpc_endpoint_id        = aws_vpc_endpoint.rs9-gwlbe[each.key].id
+}
+
+resource "aws_route" "rs9-tgwa--dg-ipv6" {
+  for_each = local.rs9.tgwa6
+
+  route_table_id              = aws_route_table.rs9-tgwa[each.key].id
+  destination_ipv6_cidr_block = "::/0"
+  vpc_endpoint_id             = aws_vpc_endpoint.rs9-gwlbe[each.key].id
 }
 
 resource "aws_route_table_association" "rs9-tgwa" {

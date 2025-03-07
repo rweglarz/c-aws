@@ -25,6 +25,12 @@ resource "aws_vpc_ipv4_cidr_block_association" "this" {
   cidr_block = each.value
 }
 
+resource "aws_vpc_ipv6_cidr_block_association" "this" {
+  count = var.dual_stack ? 1 : 0
+  ipv6_ipam_pool_id = var.ipv6_ipam_pool_id
+  vpc_id            = aws_vpc.this.id
+}
+
 resource "aws_internet_gateway" "this" {
   count  = (var.deploy_igw == true) ? 1 : 0
   vpc_id = aws_vpc.this.id

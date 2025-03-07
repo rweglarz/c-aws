@@ -6,6 +6,14 @@ variable "cidr_block" {
   type = string
 }
 
+variable "dual_stack" {
+  type    = bool
+  default = false
+}
+variable ipv6_ipam_pool_id {
+  default = null
+}
+
 variable "extra_cidr_blocks" {
   type = list
   default = []
