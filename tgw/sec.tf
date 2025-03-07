@@ -1,5 +1,5 @@
 module "mfw" {
-  source = "../modules/gwlb_asg_fw"
+  source = "../modules/sec_vpc_gwlb_asg_fw"
 
   name                 = "${var.name}-mfw"
   cidr                 = var.sec_cidr
