@@ -8,6 +8,7 @@ output "security_groups" {
     private         = aws_security_group.private.id
     public_mgmt     = aws_security_group.public.id
     wide_open       = aws_security_group.open.id
+    local_vpc       = aws_security_group.local_vpc.id
     managed_devices = aws_security_group.managed_devices.id
   }
 }

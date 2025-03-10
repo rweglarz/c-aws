@@ -104,6 +104,30 @@ resource "aws_vpc_security_group_egress_rule"  "open_egress_ipv6" {
 
 
 
+resource "aws_security_group" "local_vpc" {
+  vpc_id      = aws_vpc.this.id
+  name        = "${var.name}-local-vpc"
+  description = "local vpc traffic inboun"
+
+  tags = {
+    Name = "${var.name}-local-vpc-inbound"
+  }
+}
+
+resource "aws_vpc_security_group_ingress_rule"  "local_vpc_ingress" {
+  security_group_id = aws_security_group.local_vpc.id
+  cidr_ipv4         = aws_vpc.this.cidr_block
+  ip_protocol       = "-1"
+}
+
+resource "aws_vpc_security_group_ingress_rule"  "local_vpc_ingress_ipv6" {
+  security_group_id = aws_security_group.local_vpc.id
+  cidr_ipv6         = aws_vpc.this.ipv6_cidr_block
+  ip_protocol       = "-1"
+}
+
+
+
 resource "aws_security_group" "managed_devices" {
   vpc_id      = aws_vpc.this.id
   name        = "${var.name}-managed-devices"
