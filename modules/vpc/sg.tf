@@ -80,7 +80,13 @@ resource "aws_security_group" "open" {
 
 resource "aws_vpc_security_group_ingress_rule"  "open_ingress" {
   security_group_id = aws_security_group.open.id
-  prefix_list_id    = var.public_mgmt_prefix_list
+  cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "-1"
+}
+
+resource "aws_vpc_security_group_ingress_rule"  "open_ingress_ipv6" {
+  security_group_id = aws_security_group.open.id
+  cidr_ipv6         = "::/0"
   ip_protocol       = "-1"
 }
 
@@ -88,6 +94,12 @@ resource "aws_vpc_security_group_egress_rule"  "open_egress" {
   security_group_id = aws_security_group.open.id
     ip_protocol = "-1"
     cidr_ipv4   = "0.0.0.0/0"
+}
+
+resource "aws_vpc_security_group_egress_rule"  "open_egress_ipv6" {
+  security_group_id = aws_security_group.open.id
+  cidr_ipv6         = "::/0"
+  ip_protocol       = "-1"
 }
 
 
