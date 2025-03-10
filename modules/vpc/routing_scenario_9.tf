@@ -33,6 +33,7 @@ locals {
     mgmt = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==9) && strcontains(k, "mgmt-")) }
     fwprv = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==9) && strcontains(k, "fwprv-")) }
     fwpub = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==9) && strcontains(k, "fwpub-")) }
+    fwpub6 = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==9 && var.dual_stack) && strcontains(k, "fwpub-")) }
     gwlbe = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==9) && strcontains(k, "gwlbe-")) }
     gwlbe6 = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==9 && var.dual_stack) && strcontains(k, "gwlbe-")) }
     natgw = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==9) && strcontains(k, "natgw-")) }
@@ -182,6 +183,14 @@ resource "aws_route" "rs9-fwpub-dg" {
   route_table_id         = aws_route_table.rs9-fwpub[each.key].id
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = aws_internet_gateway.this[0].id
+}
+
+resource "aws_route" "rs9-fwpub-dg-ipv6" {
+  for_each = local.rs9.fwpub6
+
+  route_table_id              = aws_route_table.rs9-fwpub[each.key].id
+  destination_ipv6_cidr_block = "::/0"
+  gateway_id                  = aws_internet_gateway.this[0].id
 }
 
 resource "aws_route_table_association" "rs9-fwpub" {
