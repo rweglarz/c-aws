@@ -3,7 +3,7 @@ output "vpc" {
 }
 
 
-output "security_groups" {
+output "security_group_ids" {
   value = {
     private         = aws_security_group.private.id
     public_mgmt     = aws_security_group.public.id
