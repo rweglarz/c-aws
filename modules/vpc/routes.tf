@@ -12,6 +12,9 @@ resource "aws_route" "via_tgw" {
   route_table_id         = aws_route_table.via_tgw[0].id
   destination_cidr_block = "0.0.0.0/0"
   transit_gateway_id     = var.transit_gateway_id
+  depends_on = [
+    aws_ec2_transit_gateway_vpc_attachment.this
+  ]
 }
 
 resource "aws_route_table" "via_igw" {
@@ -51,6 +54,9 @@ resource "aws_route" "via_mixed-tgw" {
   route_table_id         = aws_route_table.via_mixed[0].id
   destination_cidr_block = "172.16.0.0/12"
   transit_gateway_id     = var.transit_gateway_id
+  depends_on = [
+    aws_ec2_transit_gateway_vpc_attachment.this
+  ]
 }
 
 resource "aws_route_table" "pfx_via_igw" {
@@ -74,4 +80,7 @@ resource "aws_route" "pfx_via_igw-tgw" {
   route_table_id         = aws_route_table.pfx_via_igw[0].id
   destination_cidr_block = "0.0.0.0/0"
   transit_gateway_id     = var.transit_gateway_id
+  depends_on = [
+    aws_ec2_transit_gateway_vpc_attachment.this
+  ]
 }

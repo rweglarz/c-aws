@@ -6,7 +6,7 @@ variable "cidr_block" {
   type = string
 }
 
-variable "dual_stack" {
+variable "ipv6" {
   type    = bool
   default = false
 }

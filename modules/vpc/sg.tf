@@ -21,9 +21,13 @@ resource "aws_vpc_security_group_egress_rule"  "public_egress" {
 }
 
 resource "aws_vpc_security_group_egress_rule"  "public_egress_ipv6" {
+  count = var.ipv6 ? 1 : 0
   security_group_id = aws_security_group.public.id
   ip_protocol = "-1"
   cidr_ipv6   = "::/0"
+  depends_on = [ 
+    aws_vpc_ipv6_cidr_block_association.this
+   ]
 }
 
 
@@ -52,6 +56,9 @@ resource "aws_vpc_security_group_ingress_rule"  "private_ingress_ipv6" {
   security_group_id = aws_security_group.private.id
   ip_protocol       = "-1"
   cidr_ipv6         = "fd00::/8"
+  depends_on = [ 
+    aws_vpc_ipv6_cidr_block_association.this
+   ]
 }
 
 resource "aws_vpc_security_group_egress_rule"  "private_egress" {
@@ -61,9 +68,13 @@ resource "aws_vpc_security_group_egress_rule"  "private_egress" {
 }
 
 resource "aws_vpc_security_group_egress_rule"  "private_egress_ipv6" {
+  count = var.ipv6 ? 1 : 0
   security_group_id = aws_security_group.private.id
   ip_protocol = "-1"
   cidr_ipv6   = "::/0"
+  depends_on = [ 
+    aws_vpc_ipv6_cidr_block_association.this
+   ]
 }
 
 
@@ -85,9 +96,13 @@ resource "aws_vpc_security_group_ingress_rule"  "open_ingress" {
 }
 
 resource "aws_vpc_security_group_ingress_rule"  "open_ingress_ipv6" {
+  count = var.ipv6 ? 1 : 0
   security_group_id = aws_security_group.open.id
   cidr_ipv6         = "::/0"
   ip_protocol       = "-1"
+  depends_on = [ 
+    aws_vpc_ipv6_cidr_block_association.this
+   ]
 }
 
 resource "aws_vpc_security_group_egress_rule"  "open_egress" {
@@ -100,6 +115,9 @@ resource "aws_vpc_security_group_egress_rule"  "open_egress_ipv6" {
   security_group_id = aws_security_group.open.id
   cidr_ipv6         = "::/0"
   ip_protocol       = "-1"
+  depends_on = [ 
+    aws_vpc_ipv6_cidr_block_association.this
+   ]
 }
 
 
@@ -121,9 +139,13 @@ resource "aws_vpc_security_group_ingress_rule"  "local_vpc_ingress" {
 }
 
 resource "aws_vpc_security_group_ingress_rule"  "local_vpc_ingress_ipv6" {
+  count = var.ipv6 ? 1 : 0
   security_group_id = aws_security_group.local_vpc.id
   cidr_ipv6         = aws_vpc.this.ipv6_cidr_block
   ip_protocol       = "-1"
+  depends_on = [ 
+    aws_vpc_ipv6_cidr_block_association.this
+   ]
 }
 
 

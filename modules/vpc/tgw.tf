@@ -5,7 +5,7 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "this" {
   subnet_ids             = [for s in aws_subnet.this : s.id if length(regexall("-tgwa", s.tags.Name)) > 0]
   transit_gateway_id     = var.transit_gateway_id
   appliance_mode_support = anytrue([var.appliance_mode, var.tgw_appliance_mode]) ? "enable" : "disable"
-  ipv6_support           = var.dual_stack ? "enable" : "disable"
+  ipv6_support           = var.ipv6 ? "enable" : "disable"
 
   transit_gateway_default_route_table_association = false
   transit_gateway_default_route_table_propagation = false

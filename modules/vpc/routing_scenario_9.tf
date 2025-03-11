@@ -28,14 +28,14 @@
 locals {
   rs9 = {
     tgwa = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==9) && strcontains(k, "tgwa-")) }
-    tgwa6 = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==9 && var.dual_stack) && strcontains(k, "tgwa-")) }
+    tgwa6 = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==9 && var.ipv6) && strcontains(k, "tgwa-")) }
     lambda = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==9) && strcontains(k, "lambda-")) }
     mgmt = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==9) && strcontains(k, "mgmt-")) }
     fwprv = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==9) && strcontains(k, "fwprv-")) }
     fwpub = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==9) && strcontains(k, "fwpub-")) }
-    fwpub6 = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==9 && var.dual_stack) && strcontains(k, "fwpub-")) }
+    fwpub6 = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==9 && var.ipv6) && strcontains(k, "fwpub-")) }
     gwlbe = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==9) && strcontains(k, "gwlbe-")) }
-    gwlbe6 = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==9 && var.dual_stack) && strcontains(k, "gwlbe-")) }
+    gwlbe6 = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==9 && var.ipv6) && strcontains(k, "gwlbe-")) }
     natgw = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==9) && strcontains(k, "natgw-")) }
   }
 }
@@ -49,7 +49,11 @@ resource "aws_vpc_endpoint" "rs9-gwlbe" {
   vpc_id            = aws_vpc.this.id
   service_name      = var.gwlb_service_name
   vpc_endpoint_type = "GatewayLoadBalancer"
-  ip_address_type   = var.dual_stack ? "dualstack" : "ipv4"
+  ip_address_type   = coalesce(
+    try(each.value.ipv6_native, false) && var.ipv6 ? "ipv6" : null,
+    var.ipv6 ? "dualstack" : null,
+    "ipv4"
+  )
 
   tags = {
     Name = "${var.name}-rs9-gwlbe-${each.key}"

@@ -31,14 +31,20 @@ resource "aws_route" "rs1-workload-dg" {
   route_table_id         = aws_route_table.rs1-workload[0].id
   destination_cidr_block = "0.0.0.0/0"
   transit_gateway_id     = var.transit_gateway_id
+  depends_on = [
+    aws_ec2_transit_gateway_vpc_attachment.this
+  ]
 }
 
 resource "aws_route" "rs1-workload-dg-ipv6" {
-  count = (var.routing_scenario==1 && var.dual_stack) ? 1 : 0
+  count = (var.routing_scenario==1 && var.ipv6) ? 1 : 0
 
   route_table_id              = aws_route_table.rs1-workload[0].id
   destination_ipv6_cidr_block = "::/0"
   transit_gateway_id          = var.transit_gateway_id
+  depends_on = [
+    aws_ec2_transit_gateway_vpc_attachment.this
+  ]
 }
 
 resource "aws_route" "rs1-workload-mgmt" {

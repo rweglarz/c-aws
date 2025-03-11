@@ -11,9 +11,12 @@ resource "aws_subnet" "this" {
   vpc_id            = aws_vpc.this.id
   availability_zone = each.value.zone
 
-  cidr_block                      = try(each.value.cidr_block, cidrsubnet(aws_vpc.this.cidr_block, local.extra_mask_bits[each.key], each.value.idx))
+  cidr_block                      = try(! each.value.ipv6_native, true) ? try(each.value.cidr_block, cidrsubnet(aws_vpc.this.cidr_block, local.extra_mask_bits[each.key], each.value.idx)) : null
   ipv6_cidr_block                 = try(cidrsubnet(aws_vpc_ipv6_cidr_block_association.this[0].ipv6_cidr_block, 8, each.value.idx), null)
-  assign_ipv6_address_on_creation = var.dual_stack
+  assign_ipv6_address_on_creation = var.ipv6
+  ipv6_native                     = try(each.value.ipv6_native, false)
+
+  enable_resource_name_dns_aaaa_record_on_launch = var.ipv6
 
   tags = merge(
     { Name = "${var.name}-${each.key}" },
