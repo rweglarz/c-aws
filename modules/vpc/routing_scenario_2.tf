@@ -14,7 +14,7 @@
 
 locals {
   rs2 = {
-    workload = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==2) && strcontains(k, "workload-")) }
+    workload = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==2 && v.ipv6_native==false) && strcontains(k, "workload-")) }
     workload6 = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==2) && strcontains(k, "workload-")) }
     gwlbe = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==2) && strcontains(k, "gwlbe-")) }
   }
@@ -78,7 +78,7 @@ resource "aws_route_table_association" "rs2-gwlbe" {
 
 
 resource "aws_route_table" "rs2-workload" {
-  for_each = local.rs2.workload
+  for_each = merge(local.rs2.workload, local.rs2.workload6)
 
   vpc_id = aws_vpc.this.id
   tags = {
@@ -112,7 +112,7 @@ resource "aws_route" "rs2-workload-172-16" {
 }
 
 resource "aws_route_table_association" "rs2-workload" {
-  for_each = local.rs2.workload
+  for_each = merge(local.rs2.workload, local.rs2.workload6)
 
   subnet_id      = each.value.id
   route_table_id = aws_route_table.rs2-workload[each.key].id
