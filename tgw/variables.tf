@@ -43,11 +43,29 @@ variable "app1_cidr" {
   type    = string
   default = "172.31.201.0/24"
 }
-
-variable "pl-mgmt-csp_nat_ips" {
-  type = string
+variable "app2_cidr" {
+  type    = string
+  default = "172.31.202.0/24"
 }
-variable "pl-mgmt-mgmt_ips" {
+variable "app3_cidr" {
+  type    = string
+  default = "172.31.203.0/24"
+}
+variable "app8_cidr" {
+  type    = string
+  default = "172.31.208.0/24"
+}
+variable "app82_cidr" {
+  type    = string
+  default = "192.168.82.0/24"
+}
+
+variable "dual_stack" {
+  description = "use ipv4 and ipv6"
+  default     = false
+}
+
+variable "pl-mgmt_ips" {
   type = string
 }
 
@@ -61,11 +79,11 @@ variable "ubuntu_version" {
 }
 
 variable "fw_instance_type" {
-  default = "m5.large"
+  default = "m5.xlarge"
   type    = string
 }
 variable "fw_version" {
-  default = "11.2.3-h3"
+  default = "11.1.4-h13"
   type    = string
 }
 

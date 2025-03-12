@@ -1,8 +1,48 @@
+module "vpc_sec" {
+  source = "../modules/vpc"
+
+  name = "${var.name}-sec"
+
+  cidr_block              = var.sec_cidr
+  ipv6                    = var.dual_stack
+  ipv6_ipam_pool_id       = var.dual_stack ? aws_vpc_ipam_pool.ipv6_public.id : null
+  public_mgmt_prefix_list = var.pl-mgmt_ips
+  deploy_igw              = true
+  deploy_natgw            = true
+
+  connect_tgw                    = true
+  transit_gateway_id             = aws_ec2_transit_gateway.tgw.id
+  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.sec.id
+
+  gwlb_service_name = module.mfw.vpc_endpoint_service_name
+
+  routing_scenario = 9
+
+  subnets = {
+    "tgwa-a"   : { "idx" :  0, "zone" : var.availability_zones[0] },
+    "tgwa-b"   : { "idx" :  1, "zone" : var.availability_zones[1] },
+    "lambda-a" : { "idx" :  2, "zone" : var.availability_zones[0] },
+    "lambda-b" : { "idx" :  3, "zone" : var.availability_zones[1] },
+    "gwlb-a"   : { "idx" :  4, "zone" : var.availability_zones[0] },
+    "gwlb-b"   : { "idx" :  5, "zone" : var.availability_zones[1] },
+    "mgmt-a"   : { "idx" :  6, "zone" : var.availability_zones[0] },
+    "mgmt-b"   : { "idx" :  7, "zone" : var.availability_zones[1] },
+    "fwprv-a"  : { "idx" :  8, "zone" : var.availability_zones[0] },
+    "fwprv-b"  : { "idx" :  9, "zone" : var.availability_zones[1] },
+    "fwpub-a"  : { "idx" : 10, "zone" : var.availability_zones[0] },
+    "fwpub-b"  : { "idx" : 11, "zone" : var.availability_zones[1] },
+    "gwlbe-a"  : { "idx" : 12, "zone" : var.availability_zones[0] },
+    "gwlbe-b"  : { "idx" : 13, "zone" : var.availability_zones[1] },
+    "natgw-a"  : { "idx" : 14, "zone" : var.availability_zones[0] },
+    "natgw-b"  : { "idx" : 15, "zone" : var.availability_zones[1] },
+  }
+}
+
 module "mfw" {
-  source = "../modules/sec_vpc_gwlb_asg_fw"
+  source = "../modules/gwlb_asg_fw"
 
   name                 = "${var.name}-mfw"
-  cidr                 = var.sec_cidr
+  dual_stack           = var.dual_stack
   availability_zones   = var.availability_zones
   tgw                  = aws_ec2_transit_gateway.tgw.id
   fw_version           = var.fw_version
@@ -12,65 +52,45 @@ module "mfw" {
   bootstrap_options = merge(
     var.bootstrap_options["common"],
     var.bootstrap_options["pan_pub"],
-    # var.bootstrap_options["pan_prv"],
     var.bootstrap_options["gwlb"],
     # var.bootstrap_options["redis"],
   )
   desired_capacity = 0
   target_failover  = var.target_failover
-}
-
-resource "aws_route" "sec-in-mgmt" {
-  route_table_id         = data.terraform_remote_state.mgmt.outputs.aws_route_table_mgmt_id
-  destination_cidr_block = var.sec_cidr
-  transit_gateway_id     = aws_ec2_transit_gateway.tgw.id
-}
-
-resource "aws_ec2_managed_prefix_list_entry" "sec" {
-  count          = length(module.mfw.natgw-public_ips)
-  cidr           = "${module.mfw.natgw-public_ips[count.index]}/32"
-  prefix_list_id = var.pl-mgmt-csp_nat_ips
-  description    = "${var.name}-sec-natgw"
-}
-
-
-
-resource "aws_ec2_transit_gateway_vpc_attachment" "mgmt" {
-  vpc_id                                          = data.terraform_remote_state.mgmt.outputs.aws_vpc_mgmt_id
-  subnet_ids                                      = data.terraform_remote_state.mgmt.outputs.aws_subnet_mgmt_id
-  transit_gateway_id                              = aws_ec2_transit_gateway.tgw.id
-  transit_gateway_default_route_table_association = false
-  transit_gateway_default_route_table_propagation = false
-  tags = {
-    Name = "${var.name}-mgmt"
+  vpc_id = module.vpc_sec.vpc.id
+  gwlb_subnet_ids   = [for k,v in module.vpc_sec.subnets: v.id if strcontains(k, "gwlb-")]
+  # lambda_subnet_ids = [for k,v in module.vpc_sec.subnets: v.id if strcontains(k, "lambda-")]
+  interfaces = {
+    prv = {
+      device_index = 0
+      security_group_ids = [
+        module.vpc_sec.security_group_ids.local_vpc,
+        module.vpc_sec.security_group_ids.outbound,
+      ]
+      subnet_id = { for k,v in module.vpc_sec.subnets: v.availability_zone => v.id if strcontains(k, "fwprv-") }
+      associate_public_ip = false
+    }
+    mgmt = {
+      device_index = 1
+      security_group_ids = [
+        module.vpc_sec.security_group_ids.public_mgmt,
+        module.vpc_sec.security_group_ids.private,
+        module.vpc_sec.security_group_ids.outbound,
+      ]
+      subnet_id = { for k,v in module.vpc_sec.subnets: v.availability_zone => v.id if strcontains(k, "mgmt-") }
+      associate_public_ip = false
+    }
+    pub = {
+      device_index       = 2
+      security_group_ids = [
+        module.vpc_sec.security_group_ids.outbound,
+      ]
+      subnet_id = { for k,v in module.vpc_sec.subnets: v.availability_zone => v.id if strcontains(k, "fwpub-") }
+      associate_public_ip = true
+    }
   }
 }
-resource "aws_ec2_transit_gateway_route_table" "mgmt" {
-  transit_gateway_id = aws_ec2_transit_gateway.tgw.id
-  tags = {
-    Name = "${var.name}-mgmt"
-  }
-}
-resource "aws_ec2_transit_gateway_route_table_association" "mgmt" {
-  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.mgmt.id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.mgmt.id
-}
-resource "aws_ec2_transit_gateway_route_table_propagation" "mgmt_to_sec" {
-  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.mgmt.id
-  transit_gateway_route_table_id = module.mfw.aws_ec2_transit_gateway_route_table_id
-}
-resource "aws_ec2_transit_gateway_route_table_propagation" "sec_to_mgmt" {
-  transit_gateway_attachment_id  = module.mfw.aws_ec2_transit_gateway_vpc_attachment_id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.mgmt.id
-}
-resource "aws_ec2_transit_gateway_route_table_propagation" "mgmt-into-spoke" {
-  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.mgmt.id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.spoke.id
-}
 
-output "fw_vpc_endpoint_service_name" {
-  value = module.mfw.aws_vpc_endpoint_service_name
-}
 
 output "scale_it_out" {
   value = "awsscg m-mfw 2"
