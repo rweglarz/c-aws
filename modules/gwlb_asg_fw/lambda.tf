@@ -25,6 +25,8 @@ resource "aws_iam_policy" "lambda_iam_policy" {
         Action = [
           "autoscaling:CompleteLifecycleAction",
           "autoscaling:DescribeAutoScalingGroups",
+          "ec2:AllocateAddress",
+          "ec2:AssociateAddress",
           "ec2:AssignIpv6Addresses",
           "ec2:AttachNetworkInterface",
           "ec2:CreateNetworkInterface",
@@ -85,6 +87,7 @@ resource "aws_lambda_function" "eni_lambda" {
       di1_sg_ids = join(",", local.di1_sg_ids)
       di2_sg_ids = join(",", local.di2_sg_ids)
       ipv6       = var.dual_stack ? "true" : "false"
+      interfaces = jsonencode({for k,v in var.interfaces: v.device_index => v})
     }
   }
 }
