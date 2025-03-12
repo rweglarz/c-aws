@@ -57,3 +57,8 @@ variable "tags" {
 variable "source_dest_check" {
   default = true
 }
+
+variable "monitoring" {
+  default = false
+  description = "If true, the launched EC2 instance will have detailed monitoring enabled"
+}

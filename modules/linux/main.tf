@@ -11,6 +11,8 @@ resource "aws_instance" "this" {
   vpc_security_group_ids = var.vpc_security_group_ids
   source_dest_check      = var.source_dest_check
 
+  monitoring = var.monitoring
+
   lifecycle { ignore_changes = [ ami ] }
   tags = merge(
     {
