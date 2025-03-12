@@ -5,9 +5,9 @@ locals {
   primary_eni_subnet_ids = flatten([for k, v in local.primary_eni_subnets : v])
   di1_eni_subnet_ids     = flatten([for k, v in local.di1_eni_subnets : v ])                                # should be mgmt
   di2_eni_subnet_ids     = flatten([for k, v in local.di2_eni_subnets : v ])                                # should be public
-  primary_sg_ids         = [for k, v in var.interfaces : v.security_group_ids[0] if v.device_index == 0]    # should be private
-  di1_sg_ids             = [for k, v in var.interfaces : v.security_group_ids[0] if v.device_index == 1]    # should be mgmt
-  di2_sg_ids             = [for k, v in var.interfaces : v.security_group_ids[0] if v.device_index == 2]    # should be public
+  primary_sg_ids         = one([for k, v in var.interfaces : v.security_group_ids if v.device_index == 0])  # should be private
+  di1_sg_ids             = one([for k, v in var.interfaces : v.security_group_ids if v.device_index == 1])  # should be mgmt
+  di2_sg_ids             = one([for k, v in var.interfaces : v.security_group_ids if v.device_index == 2])  # should be public
 }
 
 resource "aws_autoscaling_group" "this" {
