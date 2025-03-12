@@ -7,7 +7,8 @@ variable "subnet_id" {
 }
 
 variable "private_ip" {
-  type = string
+  type    = string
+  default = null
 }
 
 variable "user_data" {
