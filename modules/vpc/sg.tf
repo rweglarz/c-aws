@@ -1,10 +1,40 @@
+resource "aws_security_group" "outbound" {
+  vpc_id      = aws_vpc.this.id
+  name        = "${var.name}-outbound"
+  description = "outbound traffic"
+
+  tags = {
+    Name = "${var.name}-outbound"
+  }
+}
+
+resource "aws_vpc_security_group_egress_rule"  "outbound_egress" {
+  security_group_id = aws_security_group.outbound.id
+  ip_protocol = "-1"
+  cidr_ipv4   = "0.0.0.0/0"
+  description = "tf-ipv4"
+}
+
+resource "aws_vpc_security_group_egress_rule"  "outbound_egress_ipv6" {
+  count = var.ipv6 ? 1 : 0
+  security_group_id = aws_security_group.outbound.id
+  ip_protocol = "-1"
+  cidr_ipv6   = "::/0"
+  depends_on = [ 
+    aws_vpc_ipv6_cidr_block_association.this
+  ]
+  description = "tf-ipv6"
+}
+
+
+
 resource "aws_security_group" "public" {
   vpc_id      = aws_vpc.this.id
-  name        = "${var.name}-public"
+  name        = "${var.name}-public-mgmt-inbound"
   description = "public mgmt traffic"
 
   tags = {
-    Name = "${var.name}-public"
+    Name = "${var.name}-public-mgmt-inbound"
   }
 }
 
@@ -14,30 +44,14 @@ resource "aws_vpc_security_group_ingress_rule"  "public_ingress" {
   ip_protocol       = "-1"
 }
 
-resource "aws_vpc_security_group_egress_rule"  "public_egress" {
-  security_group_id = aws_security_group.public.id
-  ip_protocol = "-1"
-  cidr_ipv4   = "0.0.0.0/0"
-}
-
-resource "aws_vpc_security_group_egress_rule"  "public_egress_ipv6" {
-  count = var.ipv6 ? 1 : 0
-  security_group_id = aws_security_group.public.id
-  ip_protocol = "-1"
-  cidr_ipv6   = "::/0"
-  depends_on = [ 
-    aws_vpc_ipv6_cidr_block_association.this
-   ]
-}
-
 
 
 resource "aws_security_group" "private" {
   vpc_id      = aws_vpc.this.id
-  name        = "${var.name}-private"
+  name        = "${var.name}-private-private"
   description = "local traffic"
   tags = {
-    Name = "${var.name}-local"
+    Name = "${var.name}-private-inbound"
   }
 }
 
@@ -61,31 +75,15 @@ resource "aws_vpc_security_group_ingress_rule"  "private_ingress_ipv6" {
    ]
 }
 
-resource "aws_vpc_security_group_egress_rule"  "private_egress" {
-  security_group_id = aws_security_group.private.id
-    ip_protocol = "-1"
-    cidr_ipv4   = "0.0.0.0/0"
-}
-
-resource "aws_vpc_security_group_egress_rule"  "private_egress_ipv6" {
-  count = var.ipv6 ? 1 : 0
-  security_group_id = aws_security_group.private.id
-  ip_protocol = "-1"
-  cidr_ipv6   = "::/0"
-  depends_on = [ 
-    aws_vpc_ipv6_cidr_block_association.this
-   ]
-}
-
 
 
 resource "aws_security_group" "open" {
   vpc_id      = aws_vpc.this.id
-  name        = "${var.name}-open"
+  name        = "${var.name}-open-inbound"
   description = "all traffic"
 
   tags = {
-    Name = "${var.name}-open"
+    Name = "${var.name}-open-inbound"
   }
 }
 
@@ -105,31 +103,19 @@ resource "aws_vpc_security_group_ingress_rule"  "open_ingress_ipv6" {
    ]
 }
 
-resource "aws_vpc_security_group_egress_rule"  "open_egress" {
-  security_group_id = aws_security_group.open.id
-    ip_protocol = "-1"
-    cidr_ipv4   = "0.0.0.0/0"
-}
-
-resource "aws_vpc_security_group_egress_rule"  "open_egress_ipv6" {
-  security_group_id = aws_security_group.open.id
-  cidr_ipv6         = "::/0"
-  ip_protocol       = "-1"
-  depends_on = [ 
-    aws_vpc_ipv6_cidr_block_association.this
-   ]
-}
-
 
 
 resource "aws_security_group" "local_vpc" {
   vpc_id      = aws_vpc.this.id
-  name        = "${var.name}-local-vpc"
-  description = "local vpc traffic inboun"
+  name        = "${var.name}-local-vpc-inbound"
+  description = "local vpc traffic inbound"
 
   tags = {
     Name = "${var.name}-local-vpc-inbound"
   }
+  depends_on = [ 
+    aws_vpc_ipv6_cidr_block_association.this
+   ]
 }
 
 resource "aws_vpc_security_group_ingress_rule"  "local_vpc_ingress" {
@@ -152,11 +138,11 @@ resource "aws_vpc_security_group_ingress_rule"  "local_vpc_ingress_ipv6" {
 
 resource "aws_security_group" "managed_devices" {
   vpc_id      = aws_vpc.this.id
-  name        = "${var.name}-managed-devices"
+  name        = "${var.name}-managed-devices-inbound"
   description = "managed-devices"
 
   tags = {
-    Name = "${var.name}-managed-devices"
+    Name = "${var.name}-managed-devices-inbound"
   }
 }
 
@@ -166,11 +152,5 @@ resource "aws_vpc_security_group_ingress_rule"  "managed_devices_ingress" {
   ip_protocol       = "tcp"
   from_port         = each.key
   to_port           = each.key
-  cidr_ipv4         = "0.0.0.0/0"
-}
-
-resource "aws_vpc_security_group_egress_rule"  "managed_devices_egress" {
-  security_group_id = aws_security_group.managed_devices.id
-  ip_protocol = "-1"
   cidr_ipv4         = "0.0.0.0/0"
 }

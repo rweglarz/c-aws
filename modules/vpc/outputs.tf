@@ -10,6 +10,7 @@ output "security_group_ids" {
     wide_open       = aws_security_group.open.id
     local_vpc       = aws_security_group.local_vpc.id
     managed_devices = aws_security_group.managed_devices.id
+    outbound        = aws_security_group.outbound.id
   }
 }
 output "sg_public_id" {
