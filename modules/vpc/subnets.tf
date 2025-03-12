@@ -17,6 +17,7 @@ resource "aws_subnet" "this" {
   ipv6_native                     = try(each.value.ipv6_native, false)
 
   enable_resource_name_dns_aaaa_record_on_launch = var.ipv6
+  enable_dns64                                   = try(each.value.ipv6_native, false)
 
   tags = merge(
     { Name = "${var.name}-${each.key}" },
