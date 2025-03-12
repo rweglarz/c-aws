@@ -1,5 +1,18 @@
+locals {
+  # quite ugly
+  arm_instances = [
+    "a1.medium",
+  ]
+  ami = coalesce(
+    var.ami,
+    contains(local.arm_instances, var.instance_type) ? data.aws_ami.ubuntu_arm.id: null,
+    # contains(local.arm_instances, var.instance_type) ? data.aws_ami.al2.id: null,
+    data.aws_ami.ubuntu.id
+  )
+}
+
 resource "aws_instance" "this" {
-  ami           = coalesce(var.ami, data.aws_ami.ubuntu.id)
+  ami           = local.ami
   instance_type = var.instance_type
   user_data     = var.user_data
   key_name      = var.key_name
