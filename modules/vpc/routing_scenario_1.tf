@@ -1,6 +1,6 @@
 # routing:
 #   workload dg via tgwa
-#   workload mgmt-pl via igw
+#   workload mgmt-pl via igw if igw is present
 # vpc config:
 #   subnets = {
 #     "tgwa-a" : { "idx" : 0, "zone" : var.availability_zones[0] },
@@ -48,7 +48,7 @@ resource "aws_route" "rs1-workload-dg-ipv6" {
 }
 
 resource "aws_route" "rs1-workload-mgmt" {
-  count = var.routing_scenario==1 ? 1 : 0
+  count = (var.routing_scenario==1 && var.deploy_igw) ? 1 : 0
 
   route_table_id             = aws_route_table.rs1-workload[0].id
   destination_prefix_list_id = var.public_mgmt_prefix_list
