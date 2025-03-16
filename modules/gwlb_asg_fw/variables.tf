@@ -7,10 +7,6 @@ variable "availability_zones" {
   type = list
 }
 
-variable "tgw" {
-  type = string
-}
-
 variable "fw_version" {
   type = string
   default = "11.1.4-h13"
