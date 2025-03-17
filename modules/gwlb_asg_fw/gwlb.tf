@@ -10,10 +10,7 @@ resource "aws_vpc_endpoint_service" "this" {
   acceptance_required        = false
   gateway_load_balancer_arns = [aws_lb.this.arn]
   depends_on                 = [aws_lb.this]
-  supported_ip_address_types = [
-    "ipv4",
-    var.dual_stack ? "ipv6" : null
-  ]
+  supported_ip_address_types = var.dual_stack ? ["ipv4", "ipv6"] : ["ipv4"]
 }
 
 resource "aws_lb_listener" "this" {
