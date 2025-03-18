@@ -48,7 +48,7 @@ resource "aws_vpc_security_group_ingress_rule"  "public_ingress" {
 
 resource "aws_security_group" "private" {
   vpc_id      = aws_vpc.this.id
-  name        = "${var.name}-private-private"
+  name        = "${var.name}-private-inbound"
   description = "local traffic"
   tags = {
     Name = "${var.name}-private-inbound"
