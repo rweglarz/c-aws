@@ -16,7 +16,6 @@ def retrieve_and_associate_public_ip(network_interface_id):
         NetworkInterfaceId=network_interface_id
     )
     log(f"Created public ip association: {network_interface_id} {ipv4assoc['AssociationId']}")
-
     return
 
 
@@ -68,7 +67,24 @@ def create_and_attach_network_interface(instance_id, device_index, subnet, i_cfg
         retrieve_and_associate_public_ip(network_interface_id)
     else:
         log("Not associating public ip")
+    return
 
+
+
+def complete_lifecycle(instance_id, event):
+    asg_client = boto3.client('autoscaling')
+    try:
+        asg_client.complete_lifecycle_action(
+                LifecycleHookName=event['detail']['LifecycleHookName'],
+                AutoScalingGroupName=event['detail']['AutoScalingGroupName'],
+                LifecycleActionToken=event['detail']['LifecycleActionToken'],
+                LifecycleActionResult='CONTINUE',
+            )
+    except botocore.exceptions.ClientError as e:
+        log("Error completing life cycle hook for instance {}: {}".format(
+            instance_id, e.response['Error']['Code']))
+
+    log(f"Completed-continue lifecyle: {instance_id} Event:{event['detail-type']} ")
     return
 
 
@@ -112,26 +128,20 @@ def lambda_handler(event, context):
 
     instance_id = event['detail']['EC2InstanceId']
     event_detail = event["detail-type"] 
-    if event_detail != "EC2 Instance-launch Lifecycle Action":
-        log(f"Instance: {instance_id} Event:{event_detail} - ignoring")
+    if event_detail == "EC2 Instance-launch Lifecycle Action":
+        log(f"Instance: {instance_id} Event:{event_detail} - handling")
+        handle_launch(instance_id, interfaces, config)
+        complete_lifecycle(instance_id, event)
+        return
+    if event_detail == "EC2 Instance-terminate Lifecycle Action":
+        log(f"Instance: {instance_id} Event:{event_detail} - do nothing and complete")
+        complete_lifecycle(instance_id, event)
         return
 
-    log(f"Instance: {instance_id} Event:{event_detail} - handling")
+    log(f"ERROR: Instance: {instance_id} Event:{event_detail} - unknown")
+    return
 
-    handle_launch(instance_id, interfaces, config)
 
-    log(f"Completing-continue lifecyle: {instance_id} Event:{event_detail} ")
-    asg_client = boto3.client('autoscaling')
-    try:
-        asg_client.complete_lifecycle_action(
-                LifecycleHookName=event['detail']['LifecycleHookName'],
-                AutoScalingGroupName=event['detail']['AutoScalingGroupName'],
-                LifecycleActionToken=event['detail']['LifecycleActionToken'],
-                LifecycleActionResult='CONTINUE',
-            )
-    except botocore.exceptions.ClientError as e:
-        log("Error completing life cycle hook for instance {}: {}".format(
-            instance_id, e.response['Error']['Code']))
 
 
 def log(message):
