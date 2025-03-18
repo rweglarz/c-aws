@@ -25,14 +25,14 @@ def retrieve_and_associate_public_ip(network_interface_id):
 def create_and_attach_network_interface(instance_id, device_index, subnet, i_cfg, config):
     # ipv6 prefix delegation
     ipv6_count = 0
-    if config['ipv6'] and device_index==2:
+    if config['ipv6']:
         ipv6_count = 1
 
     network_interface = ec2_client.create_network_interface(
             SubnetId = subnet,
             Groups = i_cfg['security_group_ids'],
             Description = subnet,
-            Ipv6PrefixCount = ipv6_count,
+            Ipv6AddressCount = ipv6_count,
         )
     network_interface_id = network_interface['NetworkInterface']['NetworkInterfaceId']
     log(f"Created network interface: index:{device_index} - {network_interface_id}")
@@ -53,12 +53,12 @@ def create_and_attach_network_interface(instance_id, device_index, subnet, i_cfg
             NetworkInterfaceId=network_interface_id,
         )
 
-    if config['ipv6']:
+    if config['ipv6'] and device_index==2:
         aipv6a = ec2_client.assign_ipv6_addresses(
                 NetworkInterfaceId=network_interface_id,
-                Ipv6AddressCount=1
+                Ipv6PrefixCount=1
             )
-        log(f"Assigned ipv6 address: {aipv6a}")
+        log(f"Assigned ipv6 prefix: {aipv6a['AssignedIpv6Prefixes'][0]}")
 
     associate_public_ip = False
     try:
