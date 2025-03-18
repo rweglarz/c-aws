@@ -66,14 +66,21 @@ resource "aws_iam_role_policy_attachment" "lambda_role_attachment" {
   policy_arn = aws_iam_policy.lambda_iam_policy.arn
 }
 
+
+locals {
+  lambda_config = {
+    ipv6 = var.dual_stack ? true : false
+  }
+}
+
 data "archive_file" "lambda" {
   type        = "zip"
-  source_file = "${path.module}/lambda.py"
+  source_file = "${path.module}/lambda/asg_lambda.py"
   output_path = "lambda_payload.zip"
 }
 resource "aws_lambda_function" "eni_lambda" {
   role    = aws_iam_role.lambda_iam_role.arn
-  handler = "lambda.lambda_handler"
+  handler = "asg_lambda.lambda_handler"
   runtime = "python3.8"
   timeout = 90
 
@@ -83,10 +90,7 @@ resource "aws_lambda_function" "eni_lambda" {
 
   environment {
     variables = {
-      subnet_ids = join(",", concat(local.di1_eni_subnet_ids, local.di2_eni_subnet_ids))
-      di1_sg_ids = join(",", local.di1_sg_ids)
-      di2_sg_ids = join(",", local.di2_sg_ids)
-      ipv6       = var.dual_stack ? "true" : "false"
+      config     = jsonencode(local.lambda_config)
       interfaces = jsonencode({for k,v in var.interfaces: v.device_index => v})
     }
   }
