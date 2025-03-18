@@ -40,7 +40,6 @@ module "mfw" {
   source = "../../"
 
   name                 = "${var.name}-mfw"
-  availability_zones   = var.availability_zones
   fw_instance_type     = var.fw_instance_type
   fw_ami_id            = data.aws_ami.ubuntu.id
   key_pair             = var.key_pair
