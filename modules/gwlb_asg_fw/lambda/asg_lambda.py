@@ -96,24 +96,20 @@ def handle_launch(instance_id, interfaces, config):
 
 
 def lambda_handler(event, context):
-    log(event)
-    log(os.environ)
+    # log(event)
+    # log(os.environ)
     if os.environ['interfaces']:
         interfaces = json.loads(os.environ['interfaces'])
     else:
         log("Empty Environment variable interfaces")
         exit(1)
-    ipv6 = False
-    try:
-        if os.environ['ipv6']=="true":
-            ipv6 = True
-            log("IPv6 enabled")
-        else:
-            log("IPv6 disabled")
-    except:
-        log("IPv6 not passed, not enabled")
-    config = {}
-    config['ipv6'] = ipv6
+    if os.environ['config']:
+        config = json.loads(os.environ['config'])
+    else:
+        log("Empty Environment variable config")
+        exit(1)
+    log(interfaces)
+    log(config)
 
     instance_id = event['detail']['EC2InstanceId']
     event_detail = event["detail-type"] 
