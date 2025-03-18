@@ -73,7 +73,7 @@ resource "aws_route_table" "rs9-gwlbe" {
 }
 
 resource "aws_route" "rs9-gwlbe-10" {
-  for_each = local.rs9.gwlbe
+  for_each = var.connect_tgw ? local.rs9.gwlbe : {}
 
   route_table_id         = aws_route_table.rs9-gwlbe[each.key].id
   destination_cidr_block = "10.0.0.0/8"
@@ -81,7 +81,7 @@ resource "aws_route" "rs9-gwlbe-10" {
 }
 
 resource "aws_route" "rs9-gwlbe-172-16" {
-  for_each = local.rs9.gwlbe
+  for_each = var.connect_tgw ? local.rs9.gwlbe : {}
 
   route_table_id         = aws_route_table.rs9-gwlbe[each.key].id
   destination_cidr_block = "172.16.0.0/12"
@@ -89,7 +89,7 @@ resource "aws_route" "rs9-gwlbe-172-16" {
 }
 
 resource "aws_route" "rs9-gwlbe-192-168" {
-  for_each = local.rs9.gwlbe
+  for_each = var.connect_tgw ? local.rs9.gwlbe : {}
 
   route_table_id         = aws_route_table.rs9-gwlbe[each.key].id
   destination_cidr_block = "192.168.0.0/16"
@@ -97,7 +97,7 @@ resource "aws_route" "rs9-gwlbe-192-168" {
 }
 
 resource "aws_route" "rs9-gwlbe-fd" {
-  for_each = local.rs9.gwlbe6
+  for_each = var.connect_tgw ? local.rs9.gwlbe6 : {}
 
   route_table_id              = aws_route_table.rs9-gwlbe[each.key].id
   destination_ipv6_cidr_block = "fd00::/8"
@@ -156,7 +156,7 @@ resource "aws_route_table" "rs9-fwprv" {
 }
 
 resource "aws_route" "rs9-fwprv-172-16" {
-  for_each = local.rs9.fwprv
+  for_each = var.connect_tgw ? local.rs9.fwprv : {}
 
   route_table_id         = aws_route_table.rs9-fwprv[each.key].id
   destination_cidr_block = "172.16.0.0/12"
@@ -224,7 +224,7 @@ resource "aws_route" "rs9-mgmt-dg" {
 }
 
 resource "aws_route" "rs9-mgmt-172" {
-  for_each = local.rs9.mgmt
+  for_each = var.connect_tgw ? local.rs9.mgmt : {}
 
   route_table_id         = aws_route_table.rs9-mgmt[each.key].id
   destination_cidr_block = "172.16.0.0/12"
