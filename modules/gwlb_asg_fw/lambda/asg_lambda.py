@@ -60,11 +60,10 @@ def create_and_attach_network_interface(instance_id, device_index, subnet, i_cfg
             )
         log(f"Assigned ipv6 prefix: {aipv6a['AssignedIpv6Prefixes'][0]}")
 
-    associate_public_ip = False
     try:
         associate_public_ip = i_cfg['associate_public_ip']
     except:
-        pass
+        associate_public_ip = False
     if associate_public_ip:
         retrieve_and_associate_public_ip(network_interface_id)
     else:
