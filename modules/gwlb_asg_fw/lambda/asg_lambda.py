@@ -7,8 +7,21 @@ from datetime import datetime
 ec2_client = boto3.client('ec2')
 
 
-def retrieve_and_associate_public_ip(network_interface_id):
-    ipv4alloc = ec2_client.allocate_address(Domain='vpc')
+def retrieve_and_associate_public_ip(network_interface_id, config):
+    ipv4alloc = ec2_client.allocate_address(
+        Domain = 'vpc',
+        TagSpecifications = [
+            {
+                'ResourceType': 'elastic-ip',
+                'Tags': [
+                    {
+                        'Key'   : 'deployment',
+                        'Value' : config['name']
+                    }
+                ]
+            }
+        ]
+    )
     log("Created public ip {} for {}".format(ipv4alloc['PublicIp'], network_interface_id))
 
     ipv4assoc = ec2_client.associate_address(
@@ -59,14 +72,11 @@ def create_and_attach_network_interface(instance_id, device_index, subnet, i_cfg
             )
         log(f"Assigned ipv6 prefix: {aipv6a['AssignedIpv6Prefixes'][0]}")
 
-    try:
-        associate_public_ip = i_cfg['associate_public_ip']
-    except:
-        associate_public_ip = False
-    if associate_public_ip:
-        retrieve_and_associate_public_ip(network_interface_id)
+    if i_cfg.get('associate_public_ip', False):
+        log(f"Associating public ip for interface: index:{device_index} - {network_interface_id}")
+        retrieve_and_associate_public_ip(network_interface_id, config)
     else:
-        log("Not associating public ip")
+        log(f"Not associating public ip for interface: index:{device_index} - {network_interface_id}")
     return
 
 

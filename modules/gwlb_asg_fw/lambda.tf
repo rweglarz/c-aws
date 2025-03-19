@@ -70,6 +70,7 @@ resource "aws_iam_role_policy_attachment" "lambda_role_attachment" {
 locals {
   lambda_config = {
     ipv6 = var.dual_stack ? true : false
+    name = var.name
   }
 }
 
