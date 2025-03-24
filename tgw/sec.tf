@@ -43,8 +43,6 @@ module "mfw" {
 
   name                 = "${var.name}-mfw"
   dual_stack           = var.dual_stack
-  availability_zones   = var.availability_zones
-  tgw                  = aws_ec2_transit_gateway.tgw.id
   fw_version           = var.fw_version
   fw_instance_type     = var.fw_instance_type
   iam_instance_profile = data.terraform_remote_state.mgmt.outputs.instance_profile-pan_gwlb

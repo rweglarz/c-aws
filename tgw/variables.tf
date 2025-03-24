@@ -73,10 +73,6 @@ variable "bootstrap_options" {
   type = map(map(string))
 }
 
-variable "ubuntu_version" {
-  default = "20.04"
-  type    = string
-}
 
 variable "fw_instance_type" {
   default = "m5.xlarge"
