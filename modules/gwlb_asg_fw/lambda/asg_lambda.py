@@ -47,7 +47,8 @@ def create_and_attach_network_interface(instance_id, device_index, subnet, i_cfg
             Ipv6AddressCount = ipv6_count,
         )
     network_interface_id = network_interface['NetworkInterface']['NetworkInterfaceId']
-    log(f"Created network interface: index:{device_index} - {network_interface_id}")
+    private_ip = network_interface['NetworkInterface']['PrivateIpAddress']
+    log(f"Created network interface: index:{device_index} - {network_interface_id} {private_ip}")
 
     attach_interface = ec2_client.attach_network_interface(
             NetworkInterfaceId=network_interface_id,
@@ -118,6 +119,42 @@ def handle_launch(instance_id, interfaces, config):
     return
 
 
+def handle_termination(instance_id, config):
+    instance_description = ec2_client.describe_instances(InstanceIds=[instance_id])
+    instance = instance_description['Reservations'][0]['Instances'][0]
+    instance_zone = instance['Placement']['AvailabilityZone']
+    log("Handling Termination for {} in {}".format(instance_id, instance_zone))
+
+    for ni in instance['NetworkInterfaces']:
+        device_index = ni['Attachment']['DeviceIndex']
+        network_interface_id = ni['NetworkInterfaceId']
+        private_ip = ni['PrivateIpAddress']
+        log(f"Checking device_index: {device_index} {network_interface_id} {private_ip}")
+        try:
+            public_ip = instance['NetworkInterfaces'][device_index]['PrivateIpAddresses'][0]['Association']['PublicIp']
+        except:
+            log(f"No public IP found on device_index: {device_index}")
+            continue
+        log(f"Public IP {public_ip} found on device_index: {device_index}")
+        public_ip_description = ec2_client.describe_addresses(PublicIps=[public_ip])['Addresses'][0]
+        for t in public_ip_description['Tags']:
+            if t['Key']=='deployment':
+                deployment = t['Value']
+                break
+        else:
+            log("WARNING: did not find deployment tag on public ip, not handling it")
+            continue
+        log(f"Disassociating IP {public_ip}")
+        ec2_client.disassociate_address(AssociationId=public_ip_description['AssociationId'])
+        if deployment!=config['name']:
+            log(f"ERROR: public IP {public_ip} tagged with \"{deployment}\" - a different deployment than \"{config['name']}\", not releasing")
+            continue
+        log(f"Releasing IP {public_ip}")
+        ec2_client.release_address(AllocationId=public_ip_description['AllocationId'])
+
+    log("Completed termination for {} in {}".format(instance_id, instance_zone))
+    return
+
 
 
 def lambda_handler(event, context):
@@ -144,7 +181,8 @@ def lambda_handler(event, context):
         complete_lifecycle(instance_id, event)
         return
     if event_detail == "EC2 Instance-terminate Lifecycle Action":
-        log(f"Instance: {instance_id} Event:{event_detail} - do nothing and complete")
+        log(f"Instance: {instance_id} Event:{event_detail} - handling")
+        handle_termination(instance_id, config)
         complete_lifecycle(instance_id, event)
         return
 
