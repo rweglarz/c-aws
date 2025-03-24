@@ -1,7 +1,7 @@
 resource "aws_vpc_ipam_pool_cidr_allocation" "tgw" {
   count = var.dual_stack ? 1 : 0
 
-  ipam_pool_id   = aws_vpc_ipam_pool.ipv6_private.id
+  ipam_pool_id   = aws_vpc_ipam_pool.ipv6_private[0].id
 }
 
 
@@ -9,10 +9,10 @@ resource "aws_ec2_transit_gateway" "tgw" {
   amazon_side_asn                 = var.asn["no"]
   default_route_table_association = "disable"
   default_route_table_propagation = "disable"
-  transit_gateway_cidr_blocks     = [
-    var.tgw_cidr,
-    try(aws_vpc_ipam_pool_cidr_allocation.tgw[0].cidr, null)  #ipv6
-  ]
+  transit_gateway_cidr_blocks     = concat(
+    [var.tgw_cidr],
+    try(aws_vpc_ipam_pool_cidr_allocation.tgw[0].cidr, [])  #ipv6
+  )
   tags = {
     Name = "${var.name}-tgw"
   }

@@ -6,7 +6,7 @@ module "vpc_app11" {
   cidr_block              = var.app1_cidr
   public_mgmt_prefix_list = var.pl-mgmt_ips
   ipv6                    = var.dual_stack
-  ipv6_ipam_pool_id       = var.dual_stack ? aws_vpc_ipam_pool.ipv6_public.id : null
+  ipv6_ipam_pool_id       = var.dual_stack ? aws_vpc_ipam_pool.ipv6_public[0].id : null
 
   deploy_igw       = true
   connect_tgw      = false
@@ -14,12 +14,16 @@ module "vpc_app11" {
 
   gwlb_service_name = module.mfw.vpc_endpoint_service_name
 
-  subnets = {
-    "workload-a" : { "idx" : 0, "zone" : var.availability_zones[0] },
-    "gwlbe-a"    : { "idx" : 1, "zone" : var.availability_zones[0], tags = { pan_zone: "env1" } },
-    "workload-b" : { "idx" : 2, "zone" : var.availability_zones[1], ipv6_native=true },
-    "gwlbe-b"    : { "idx" : 3, "zone" : var.availability_zones[1], ipv6_native=true },
-  }
+  subnets = merge(
+    {
+      "workload-a" : { "idx" : 0, "zone" : var.availability_zones[0] },
+      "gwlbe-a"    : { "idx" : 1, "zone" : var.availability_zones[0], tags = { pan_zone: "env1" } },
+    }, 
+    var.dual_stack ? {
+      "workload-b" : { "idx" : 2, "zone" : var.availability_zones[1], ipv6_native=true },
+      "gwlbe-b"    : { "idx" : 3, "zone" : var.availability_zones[1], ipv6_native=true },
+    } : {}
+  )
 }
 
 
@@ -31,7 +35,7 @@ module "vpc_app12" {
   cidr_block              = var.app1_cidr
   public_mgmt_prefix_list = var.pl-mgmt_ips
   ipv6                    = var.dual_stack
-  ipv6_ipam_pool_id       = var.dual_stack ? aws_vpc_ipam_pool.ipv6_public.id : null
+  ipv6_ipam_pool_id       = var.dual_stack ? aws_vpc_ipam_pool.ipv6_public[0].id : null
 
   deploy_igw       = true
   connect_tgw      = false
@@ -71,6 +75,7 @@ module "vm_app11" {
 
 
 module "vm_app11d" {
+  count = var.dual_stack ? 1 : 0
   source = "../modules/linux"
 
   name          = "${var.name}-app11b"
@@ -125,9 +130,9 @@ resource "aws_route53_record" "app1" {
   ]
 }
 
-output "cidr_app1" {
-  value = {
+output "ipv6_cidr_app1" {
+  value = var.dual_stack ? {
     app11 = module.vpc_app11.vpc.ipv6_cidr_block
     app12 = module.vpc_app12.vpc.ipv6_cidr_block
-  }
+  } : {}
 }

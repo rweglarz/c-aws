@@ -5,7 +5,7 @@ module "vpc_sec" {
 
   cidr_block              = var.sec_cidr
   ipv6                    = var.dual_stack
-  ipv6_ipam_pool_id       = var.dual_stack ? aws_vpc_ipam_pool.ipv6_public.id : null
+  ipv6_ipam_pool_id       = var.dual_stack ? aws_vpc_ipam_pool.ipv6_public[0].id : null
   public_mgmt_prefix_list = var.pl-mgmt_ips
   deploy_igw              = true
   deploy_natgw            = true

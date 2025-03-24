@@ -5,7 +5,7 @@ module "vpc_app01" {
 
   cidr_block              = cidrsubnet(var.app0_cidr, 1, 0)
   ipv6                    = var.dual_stack
-  ipv6_ipam_pool_id       = var.dual_stack ? aws_vpc_ipam_pool.ipv6_private.id : null
+  ipv6_ipam_pool_id       = var.dual_stack ? aws_vpc_ipam_pool.ipv6_private[0].id : null
   public_mgmt_prefix_list = var.pl-mgmt_ips
 
   deploy_igw       = true
@@ -27,8 +27,8 @@ module "vpc_app02" {
   name = "${var.name}-app02"
 
   cidr_block              = cidrsubnet(var.app0_cidr, 1, 1)
-  ipv6                    = true
-  ipv6_ipam_pool_id       = var.dual_stack ? aws_vpc_ipam_pool.ipv6_private.id : null
+  ipv6                    = var.dual_stack
+  ipv6_ipam_pool_id       = var.dual_stack ? aws_vpc_ipam_pool.ipv6_private[0].id : null
   public_mgmt_prefix_list = var.pl-mgmt_ips
 
   deploy_igw       = true
@@ -112,9 +112,9 @@ resource "aws_route53_record" "app0" {
   ]
 }
 
-output "cidr_app0" {
-  value = {
+output "ipv6_cidr_app0" {
+  value = var.dual_stack ? {
     app01 = module.vpc_app01.vpc.ipv6_cidr_block
     app02 = module.vpc_app02.vpc.ipv6_cidr_block
-  }
+  } : {}
 }
