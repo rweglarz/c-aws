@@ -12,7 +12,7 @@ resource "aws_autoscaling_group" "this" {
   max_size                  = 2
   min_size                  = 0
   placement_group           = aws_placement_group.this.id
-  health_check_grace_period = 1300
+  health_check_grace_period = var.health_check_grace_period
 
   launch_template {
     id      = aws_launch_template.this.id

@@ -57,3 +57,7 @@ variable "gwlb_subnet_ids" {
 variable "dual_stack" {
   default = false
 }
+
+variable "health_check_grace_period" {
+  default = 1300
+}
