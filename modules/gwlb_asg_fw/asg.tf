@@ -9,7 +9,7 @@ resource "aws_autoscaling_group" "this" {
   vpc_zone_identifier = local.primary_eni_subnet_ids
 
   desired_capacity          = var.desired_capacity
-  max_size                  = 2
+  max_size                  = var.max_size
   min_size                  = 0
   placement_group           = aws_placement_group.this.id
   health_check_grace_period = var.health_check_grace_period

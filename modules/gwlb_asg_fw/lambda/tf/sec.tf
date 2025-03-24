@@ -44,7 +44,10 @@ module "mfw" {
   fw_ami_id            = data.aws_ami.ubuntu.id
   key_pair             = var.key_pair
   bootstrap_options = {}
+
+  max_size         = 10
   desired_capacity = 0
+
   vpc_id = module.vpc_sec.vpc.id
   dual_stack = var.dual_stack
 

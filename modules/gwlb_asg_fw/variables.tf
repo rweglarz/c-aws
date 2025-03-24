@@ -61,3 +61,8 @@ variable "dual_stack" {
 variable "health_check_grace_period" {
   default = 1300
 }
+
+variable "max_size" {
+  type    = number
+  default = 3
+}
