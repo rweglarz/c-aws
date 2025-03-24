@@ -104,7 +104,7 @@ module "vm_app12" {
 
   vpc_security_group_ids = [
     module.vpc_app12.security_group_ids.public_mgmt,
-    module.vpc_app11.security_group_ids.local_vpc,
+    module.vpc_app12.security_group_ids.local_vpc,
     module.vpc_app12.security_group_ids.outbound,
   ]
 }
