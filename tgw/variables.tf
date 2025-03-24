@@ -73,6 +73,10 @@ variable "bootstrap_options" {
   type = map(map(string))
 }
 
+variable "full_bootstrap" {
+  type    = bool
+  default = false
+}
 
 variable "fw_instance_type" {
   default = "m5.xlarge"

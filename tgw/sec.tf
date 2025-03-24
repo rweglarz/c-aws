@@ -38,6 +38,29 @@ module "vpc_sec" {
   }
 }
 
+
+module "bs" {
+  count = var.full_bootstrap ? 1 : 0
+  source = "github.com/PaloAltoNetworks/terraform-aws-swfw-modules//modules/bootstrap?ref=v2.1.0"
+
+  bootstrap_options = local.base_bootstrap
+  create_iam_role_policy = false
+  iam_role_name = "main-pan_gwlb"
+}
+
+locals {
+  base_bootstrap = merge(
+    var.bootstrap_options["common"],
+    var.bootstrap_options["pan_pub"],
+    var.bootstrap_options["gwlb"],
+    # var.bootstrap_options["redis"],
+  )
+  fw_bootstrap = var.full_bootstrap ? {
+    vmseries-bootstrap-aws-s3bucket = module.bs[0].bucket_name
+    mgmt-interface-swap             = "enable"
+  } : local.base_bootstrap
+}
+
 module "mfw" {
   source = "../modules/gwlb_asg_fw"
 
@@ -47,12 +70,7 @@ module "mfw" {
   fw_instance_type     = var.fw_instance_type
   iam_instance_profile = data.terraform_remote_state.mgmt.outputs.instance_profile-pan_gwlb
   key_pair             = var.key_pair
-  bootstrap_options = merge(
-    var.bootstrap_options["common"],
-    var.bootstrap_options["pan_pub"],
-    var.bootstrap_options["gwlb"],
-    # var.bootstrap_options["redis"],
-  )
+  bootstrap_options = local.fw_bootstrap
   desired_capacity = 0
   target_failover  = var.target_failover
   vpc_id = module.vpc_sec.vpc.id
