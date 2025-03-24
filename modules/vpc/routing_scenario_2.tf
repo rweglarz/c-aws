@@ -15,7 +15,7 @@
 locals {
   rs2 = {
     workload = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==2 && v.ipv6_native==false) && strcontains(k, "workload-")) }
-    workload6 = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==2) && strcontains(k, "workload-")) }
+    workload6 = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==2 && var.ipv6) && strcontains(k, "workload-")) }
     gwlbe = { for k,v in aws_subnet.this: v.availability_zone => v if ((var.routing_scenario==2) && strcontains(k, "gwlbe-")) }
   }
 }
