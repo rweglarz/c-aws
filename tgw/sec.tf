@@ -70,9 +70,12 @@ module "mfw" {
   fw_instance_type     = var.fw_instance_type
   iam_instance_profile = data.terraform_remote_state.mgmt.outputs.instance_profile-pan_gwlb
   key_pair             = var.key_pair
-  bootstrap_options = local.fw_bootstrap
   desired_capacity = 0
   target_failover  = var.target_failover
+
+  bootstrap_options         = local.fw_bootstrap
+  health_check_grace_period = var.full_bootstrap ? 2100 : null
+
   vpc_id = module.vpc_sec.vpc.id
   gwlb_subnet_ids   = [for k,v in module.vpc_sec.subnets: v.id if strcontains(k, "gwlb-")]
   # lambda_subnet_ids = [for k,v in module.vpc_sec.subnets: v.id if strcontains(k, "lambda-")]
