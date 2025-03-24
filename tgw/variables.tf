@@ -83,7 +83,7 @@ variable "fw_instance_type" {
   type    = string
 }
 variable "fw_version" {
-  default = "11.1.4-h13"
+  default = "11.2.5"
   type    = string
 }
 
