@@ -82,6 +82,25 @@ def create_and_attach_network_interface(instance_id, device_index, subnet, i_cfg
 
 
 
+def disasocciate_public_ip(public_ip, config):
+    public_ip_description = ec2_client.describe_addresses(PublicIps=[public_ip])['Addresses'][0]
+    for t in public_ip_description['Tags']:
+        if t['Key']=='deployment':
+            deployment = t['Value']
+            break
+    else:
+        log("WARNING: did not find deployment tag on public ip, not handling it")
+        return
+    log(f"Disassociating IP {public_ip}")
+    ec2_client.disassociate_address(AssociationId=public_ip_description['AssociationId'])
+    if deployment!=config['name']:
+        log(f"ERROR: public IP {public_ip} tagged with \"{deployment}\" - a different deployment than \"{config['name']}\", not releasing")
+        return
+    log(f"Releasing IP {public_ip}")
+    ec2_client.release_address(AllocationId=public_ip_description['AllocationId'])
+
+
+
 def complete_lifecycle(instance_id, event):
     asg_client = boto3.client('autoscaling')
     try:
@@ -119,6 +138,7 @@ def handle_launch(instance_id, interfaces, config):
     return
 
 
+
 def handle_termination(instance_id, config):
     instance_description = ec2_client.describe_instances(InstanceIds=[instance_id])
     instance = instance_description['Reservations'][0]['Instances'][0]
@@ -136,21 +156,7 @@ def handle_termination(instance_id, config):
             log(f"No public IP found on device_index: {device_index}")
             continue
         log(f"Public IP {public_ip} found on device_index: {device_index}")
-        public_ip_description = ec2_client.describe_addresses(PublicIps=[public_ip])['Addresses'][0]
-        for t in public_ip_description['Tags']:
-            if t['Key']=='deployment':
-                deployment = t['Value']
-                break
-        else:
-            log("WARNING: did not find deployment tag on public ip, not handling it")
-            continue
-        log(f"Disassociating IP {public_ip}")
-        ec2_client.disassociate_address(AssociationId=public_ip_description['AssociationId'])
-        if deployment!=config['name']:
-            log(f"ERROR: public IP {public_ip} tagged with \"{deployment}\" - a different deployment than \"{config['name']}\", not releasing")
-            continue
-        log(f"Releasing IP {public_ip}")
-        ec2_client.release_address(AllocationId=public_ip_description['AllocationId'])
+        disasocciate_public_ip(public_ip, config)
 
     log("Completed termination for {} in {}".format(instance_id, instance_zone))
     return
