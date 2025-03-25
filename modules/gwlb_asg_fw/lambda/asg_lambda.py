@@ -172,11 +172,11 @@ def handle_termination(instance_id, config):
         private_ip = ni['PrivateIpAddress']
         log(f"Checking device_index: {device_index} {network_interface_id} {private_ip}")
         try:
-            public_ip = instance['NetworkInterfaces'][device_index]['PrivateIpAddresses'][0]['Association']['PublicIp']
+            public_ip = ni['PrivateIpAddresses'][0]['Association']['PublicIp']
         except:
-            log(f"No public IP found on device_index: {device_index}")
+            log(f"No public IP found on device_index: {device_index} {network_interface_id} {private_ip}")
             continue
-        log(f"Public IP {public_ip} found on device_index: {device_index}")
+        log(f"Public IP {public_ip} found on device_index: {device_index} {network_interface_id} {private_ip}")
         disasocciate_public_ip(public_ip, config)
 
     log("Completed termination for {} in {}".format(instance_id, instance_zone))
