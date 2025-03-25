@@ -223,11 +223,27 @@ resource "aws_route" "rs9-mgmt-dg" {
   nat_gateway_id         = aws_nat_gateway.this[each.key].id
 }
 
-resource "aws_route" "rs9-mgmt-172" {
+resource "aws_route" "rs9-mgmt-10" {
+  for_each = var.connect_tgw ? local.rs9.mgmt : {}
+
+  route_table_id         = aws_route_table.rs9-mgmt[each.key].id
+  destination_cidr_block = "10.0.0.0/8"
+  transit_gateway_id     = var.transit_gateway_id
+}
+
+resource "aws_route" "rs9-mgmt-172-16" {
   for_each = var.connect_tgw ? local.rs9.mgmt : {}
 
   route_table_id         = aws_route_table.rs9-mgmt[each.key].id
   destination_cidr_block = "172.16.0.0/12"
+  transit_gateway_id     = var.transit_gateway_id
+}
+
+resource "aws_route" "rs9-mgmt-192-168" {
+  for_each = var.connect_tgw ? local.rs9.mgmt : {}
+
+  route_table_id         = aws_route_table.rs9-mgmt[each.key].id
+  destination_cidr_block = "192.168.0.0/16"
   transit_gateway_id     = var.transit_gateway_id
 }
 
@@ -243,7 +259,7 @@ resource "aws_route_table_association" "rs9-mgmt" {
 
 
 resource "aws_route_table" "rs9-natgw" {
-  for_each = local.rs9.mgmt
+  for_each = local.rs9.natgw
 
   vpc_id = aws_vpc.this.id
   tags = {
@@ -251,11 +267,27 @@ resource "aws_route_table" "rs9-natgw" {
   }
 }
 
+resource "aws_route" "rs9-natgw-10" {
+  for_each = local.rs9.gwlbe
+
+  route_table_id         = aws_route_table.rs9-natgw[each.key].id
+  destination_cidr_block = "10.0.0.0/8"
+  vpc_endpoint_id        = aws_vpc_endpoint.rs9-gwlbe[each.key].id
+}
+
 resource "aws_route" "rs9-natgw-172-16" {
   for_each = local.rs9.gwlbe
 
   route_table_id         = aws_route_table.rs9-natgw[each.key].id
   destination_cidr_block = "172.16.0.0/12"
+  vpc_endpoint_id        = aws_vpc_endpoint.rs9-gwlbe[each.key].id
+}
+
+resource "aws_route" "rs9-natgw-192-168" {
+  for_each = local.rs9.gwlbe
+
+  route_table_id         = aws_route_table.rs9-natgw[each.key].id
+  destination_cidr_block = "192.168.0.0/16"
   vpc_endpoint_id        = aws_vpc_endpoint.rs9-gwlbe[each.key].id
 }
 
