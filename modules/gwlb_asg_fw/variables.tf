@@ -66,3 +66,7 @@ variable "max_size" {
   type    = number
   default = 3
 }
+
+variable "reuse_public_ips" {
+  default = false
+}

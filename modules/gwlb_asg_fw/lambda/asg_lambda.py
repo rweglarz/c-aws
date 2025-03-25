@@ -8,21 +8,38 @@ ec2_client = boto3.client('ec2')
 
 
 def retrieve_and_associate_public_ip(network_interface_id, config):
-    ipv4alloc = ec2_client.allocate_address(
-        Domain = 'vpc',
-        TagSpecifications = [
-            {
+    ipv4alloc = None
+    if config['reuse_public_ips']:
+        log("Reuse public ips enabled")
+        public_ips_description = ec2_client.describe_addresses(Filters=[
+                {
+                    'Name'   : 'tag:deployment',
+                    'Values' : [config['name']]
+                },
+        ])
+        public_ips = public_ips_description['Addresses']
+        print(public_ips)
+        for pip in public_ips:
+            if 'AssociationId' not in pip: 
+                log(f"Found free public ip: {pip['PublicIp']}")
+                ipv4alloc = pip
+                break
+        else:
+            log("Did not find a free public ip for reuse")
+    if config['reuse_public_ips']==False or ipv4alloc is None:
+        ipv4alloc = ec2_client.allocate_address(
+            Domain = 'vpc',
+            TagSpecifications = [{
                 'ResourceType': 'elastic-ip',
-                'Tags': [
-                    {
-                        'Key'   : 'deployment',
-                        'Value' : config['name']
-                    }
-                ]
-            }
-        ]
-    )
-    log("Created public ip {} for {}".format(ipv4alloc['PublicIp'], network_interface_id))
+                'Tags': [{
+                    'Key'   : 'deployment',
+                    'Value' : config['name']
+                }]
+            }]
+        )
+        log(f"Allocated new public ip: {ipv4alloc['PublicIp']}")
+    assert(ipv4alloc)
+    log("Will use public ip {} for {}".format(ipv4alloc['PublicIp'], network_interface_id))
 
     ipv4assoc = ec2_client.associate_address(
         AllocationId=ipv4alloc['AllocationId'],
@@ -93,6 +110,10 @@ def disasocciate_public_ip(public_ip, config):
         return
     log(f"Disassociating IP {public_ip}")
     ec2_client.disassociate_address(AssociationId=public_ip_description['AssociationId'])
+
+    if config['reuse_public_ips']:
+        log(f"Reuse public IPs enabled, not releasing {public_ip}")
+        return
     if deployment!=config['name']:
         log(f"ERROR: public IP {public_ip} tagged with \"{deployment}\" - a different deployment than \"{config['name']}\", not releasing")
         return
@@ -177,6 +198,8 @@ def lambda_handler(event, context):
         log("Empty Environment variable config")
         exit(1)
     log(interfaces)
+    config.setdefault('ipv6', False)
+    config.setdefault('reuse_public_ips', False)
     log(config)
 
     instance_id = event['detail']['EC2InstanceId']

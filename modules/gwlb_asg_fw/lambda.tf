@@ -72,8 +72,9 @@ resource "aws_iam_role_policy_attachment" "lambda_role_attachment" {
 
 locals {
   lambda_config = {
-    ipv6 = var.dual_stack ? true : false
-    name = var.name
+    ipv6             = var.dual_stack ? true : false
+    name             = var.name
+    reuse_public_ips = var.reuse_public_ips
   }
 }
 
@@ -85,7 +86,7 @@ data "archive_file" "lambda" {
 resource "aws_lambda_function" "eni_lambda" {
   role    = aws_iam_role.lambda_iam_role.arn
   handler = "asg_lambda.lambda_handler"
-  runtime = "python3.8"
+  runtime = "python3.10"
   timeout = 90
 
   source_code_hash = data.archive_file.lambda.output_base64sha256

@@ -50,6 +50,7 @@ module "mfw" {
 
   vpc_id = module.vpc_sec.vpc.id
   dual_stack = var.dual_stack
+  reuse_public_ips = var.reuse_public_ips
 
 
   gwlb_subnet_ids   = [for k,v in module.vpc_sec.subnets: v.id if strcontains(k, "gwlb-")]

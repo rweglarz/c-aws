@@ -40,3 +40,8 @@ variable "dual_stack" {
   type    = bool
   default = false
 }
+
+variable "reuse_public_ips" {
+  type    = bool
+  default = false
+}
