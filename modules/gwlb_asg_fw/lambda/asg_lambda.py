@@ -3,6 +3,8 @@ import botocore
 import json
 import os
 from datetime import datetime
+from random import randint
+from time import sleep
 
 ec2_client = boto3.client('ec2')
 
@@ -41,12 +43,21 @@ def retrieve_and_associate_public_ip(network_interface_id, config):
     assert(ipv4alloc)
     log("Will use public ip {} for {}".format(ipv4alloc['PublicIp'], network_interface_id))
 
-    ipv4assoc = ec2_client.associate_address(
-        AllocationId=ipv4alloc['AllocationId'],
-        NetworkInterfaceId=network_interface_id
-    )
+    try:
+        ipv4assoc = ec2_client.associate_address(
+            AllocationId=ipv4alloc['AllocationId'],
+            NetworkInterfaceId=network_interface_id,
+            AllowReassociation=False,
+        )
+    except botocore.exceptions.ClientError as e:
+        if e.response['Error']['Code']=='Resource.AlreadyAssociated':
+            log(f"IP {ipv4alloc['PublicIp']} got associated in the meantime")
+            return False
+        print(e.response['Error'])
+        raise e
+
     log(f"Created public ip association: {network_interface_id} {ipv4assoc['AssociationId']}")
-    return
+    return True
 
 
 
@@ -90,12 +101,19 @@ def create_and_attach_network_interface(instance_id, device_index, subnet, i_cfg
             )
         log(f"Assigned ipv6 prefix: {aipv6a['AssignedIpv6Prefixes'][0]}")
 
-    if i_cfg.get('associate_public_ip', False):
-        log(f"Associating public ip for interface: index:{device_index} - {network_interface_id}")
-        retrieve_and_associate_public_ip(network_interface_id, config)
-    else:
+    if i_cfg.get('associate_public_ip', False)==False:
         log(f"Not associating public ip for interface: index:{device_index} - {network_interface_id}")
-    return
+        return
+
+    log(f"Associating public ip for interface: index:{device_index} - {network_interface_id}")
+    for i in range(0, 5):
+        if retrieve_and_associate_public_ip(network_interface_id, config):
+            return
+        log(f"WARNING: Failed to associate public IP on attempt {i}")
+        sleep(randint(1,10))
+
+    log("ERROR: Failed to associate public IP, aborting")
+    raise("Failed to associate public IP ")
 
 
 
