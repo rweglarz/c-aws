@@ -8,6 +8,8 @@ from time import sleep
 
 ec2_client = boto3.client('ec2')
 
+instance_id = None
+
 
 def retrieve_and_associate_public_ip(network_interface_id, config):
     ipv4alloc = None
@@ -20,7 +22,7 @@ def retrieve_and_associate_public_ip(network_interface_id, config):
                 },
         ])
         public_ips = public_ips_description['Addresses']
-        print(public_ips)
+        log(public_ips)
         for pip in public_ips:
             if 'AssociationId' not in pip: 
                 log(f"Found free public ip: {pip['PublicIp']}")
@@ -53,7 +55,7 @@ def retrieve_and_associate_public_ip(network_interface_id, config):
         if e.response['Error']['Code']=='Resource.AlreadyAssociated':
             log(f"IP {ipv4alloc['PublicIp']} got associated in the meantime")
             return False
-        print(e.response['Error'])
+        log(e.response['Error'])
         raise e
 
     log(f"Created public ip association: {network_interface_id} {ipv4assoc['AssociationId']}")
@@ -153,7 +155,7 @@ def complete_lifecycle(instance_id, event):
         log("Error completing life cycle hook for instance {}: {}".format(
             instance_id, e.response['Error']['Code']))
 
-    log(f"Completed-continue lifecyle: {instance_id} Event:{event['detail-type']} ")
+    log(f"Completed-continue lifecyle, Event:{event['detail-type']} ")
     return
 
 
@@ -163,7 +165,7 @@ def handle_launch(instance_id, interfaces, config):
     instance_description = ec2_client.describe_instances(InstanceIds=[instance_id])
     instance = instance_description['Reservations'][0]['Instances'][0]
     instance_zone = instance['Placement']['AvailabilityZone']
-    log("Handling Launch for {} in {}".format(instance_id, instance_zone))
+    log(f"Handling Launch for in {instance_zone}")
     # log("Disabling source/destination check")
     # ec2_client.modify_instance_attribute(SourceDestCheck={'Value': False}, InstanceId=instance_id)
 
@@ -173,7 +175,7 @@ def handle_launch(instance_id, interfaces, config):
         log("Adding interface index:{} in subnet: {}".format(device_index, subnet))
         create_and_attach_network_interface(instance_id, device_index, subnet, i_cfg, config)
 
-    log("Completed launch for {} in {}".format(instance_id, instance_zone))
+    log(f"Completed launch in {instance_zone}")
     return
 
 
@@ -182,7 +184,7 @@ def handle_termination(instance_id, config):
     instance_description = ec2_client.describe_instances(InstanceIds=[instance_id])
     instance = instance_description['Reservations'][0]['Instances'][0]
     instance_zone = instance['Placement']['AvailabilityZone']
-    log("Handling Termination for {} in {}".format(instance_id, instance_zone))
+    log(f"Handling Termination in {instance_zone}")
 
     for ni in instance['NetworkInterfaces']:
         device_index = ni['Attachment']['DeviceIndex']
@@ -197,7 +199,7 @@ def handle_termination(instance_id, config):
         log(f"Public IP {public_ip} found on device_index: {device_index} {network_interface_id} {private_ip}")
         disasocciate_public_ip(public_ip, config)
 
-    log("Completed termination for {} in {}".format(instance_id, instance_zone))
+    log(f"Completed termination in {instance_zone}")
     return
 
 
@@ -215,29 +217,31 @@ def lambda_handler(event, context):
     else:
         log("Empty Environment variable config")
         exit(1)
+    global instance_id
+    instance_id = event['detail']['EC2InstanceId']
+
     log(interfaces)
     config.setdefault('ipv6', False)
     config.setdefault('reuse_public_ips', False)
     log(config)
 
-    instance_id = event['detail']['EC2InstanceId']
     event_detail = event["detail-type"] 
     if event_detail == "EC2 Instance-launch Lifecycle Action":
-        log(f"Instance: {instance_id} Event:{event_detail} - handling")
+        log(f"Event:{event_detail} - handling")
         handle_launch(instance_id, interfaces, config)
         complete_lifecycle(instance_id, event)
         return
     if event_detail == "EC2 Instance-terminate Lifecycle Action":
-        log(f"Instance: {instance_id} Event:{event_detail} - handling")
+        log(f"Event:{event_detail} - handling")
         handle_termination(instance_id, config)
         complete_lifecycle(instance_id, event)
         return
 
-    log(f"ERROR: Instance: {instance_id} Event:{event_detail} - unknown")
+    log(f"ERROR: Event:{event_detail} - unknown")
     return
 
 
 
 
 def log(message):
-    print('{}'.format(message))
+    print(f"{instance_id} {message}")
