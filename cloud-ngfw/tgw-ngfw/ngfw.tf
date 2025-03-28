@@ -57,6 +57,12 @@ resource "cloudngfwaws_ngfw" "this" {
     }
   }
 
-  rulestack = var.rule_stack
+  rulestack = var.link_id!=null ? null : var.rule_stack
   link_id   = var.link_id
+
+  lifecycle {
+    ignore_changes = [
+      global_rulestack,
+    ]
+  }
 }
