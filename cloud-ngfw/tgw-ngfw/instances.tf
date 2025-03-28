@@ -10,8 +10,9 @@ resource "aws_network_interface" "attacker" {
   subnet_id       = module.vpc-attacker.subnets["attk"].id
   private_ips     = [cidrhost(module.vpc-attacker.subnets["attk"].cidr_block, 5)]
   security_groups = [
-    module.vpc-attacker.sg_private_id,
-    module.vpc-attacker.sg_public_id,
+    module.vpc-attacker.security_group_ids.public_mgmt,
+    module.vpc-attacker.security_group_ids.private,
+    module.vpc-attacker.security_group_ids.outbound,
   ]
   tags = {
     Name = "${var.name}-attacker"
@@ -42,8 +43,9 @@ resource "aws_network_interface" "victim" {
   subnet_id   = module.vpc-victim.subnets["vict"].id
   private_ips = [cidrhost(module.vpc-victim.subnets["vict"].cidr_block, 5)]
   security_groups = [
-    module.vpc-victim.sg_private_id,
-    module.vpc-victim.sg_public_id,
+    module.vpc-victim.security_group_ids.public_mgmt,
+    module.vpc-victim.security_group_ids.private,
+    module.vpc-victim.security_group_ids.outbound,
   ]
   tags = {
     Name = "${var.name}-victim"
@@ -89,8 +91,9 @@ module "client1" {
   iam_instance_profile = var.iam_instance_profile
 
   vpc_security_group_ids = [
-    module.vpc-client1.sg_private_id,
-    module.vpc-client1.sg_public_id,
+    module.vpc-client1.security_group_ids.public_mgmt,
+    module.vpc-client1.security_group_ids.private,
+    module.vpc-client1.security_group_ids.outbound,
   ]
 }
 
@@ -107,7 +110,8 @@ module "client2" {
   iam_instance_profile = var.iam_instance_profile
 
   vpc_security_group_ids = [
-    module.vpc-client2.sg_private_id,
-    module.vpc-client2.sg_public_id,
+    module.vpc-client2.security_group_ids.public_mgmt,
+    module.vpc-client2.security_group_ids.private,
+    module.vpc-client2.security_group_ids.outbound,
   ]
 }
