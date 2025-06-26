@@ -53,7 +53,7 @@ locals {
     var.bootstrap_options["common"],
     var.bootstrap_options["pan_pub"],
     var.bootstrap_options["gwlb"],
-    # var.bootstrap_options["redis"],
+    var.use_redis ? var.bootstrap_options["redis"] : {},
   )
   fw_bootstrap = var.full_bootstrap ? {
     vmseries-bootstrap-aws-s3bucket = module.bs[0].bucket_name

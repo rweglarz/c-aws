@@ -108,3 +108,7 @@ variable "gcp_project" {
 variable "gcp_panorama_vpc_id" {
   default = null
 }
+
+variable "use_redis" {
+  default = false
+}
