@@ -10,6 +10,8 @@ module "vpc_eks" {
   deploy_igw              = true
   deploy_natgw            = true
 
+  subnet_mask_length = 26
+
   connect_tgw = false
 
   subnets = {
@@ -20,8 +22,8 @@ module "vpc_eks" {
     "gwlbe-b" : { "idx" : 4, "zone" : var.availability_zones[1] },
     "k8s-cp-a" : { "idx" : 5, "zone" : var.availability_zones[0] },
     "k8s-cp-b" : { "idx" : 6, "zone" : var.availability_zones[1] },
-    "k8s-n-a" : { "idx" : 1, "zone" : var.availability_zones[0], "subnet_mask_length" : 24 },
-    "k8s-n-b" : { "idx" : 2, "zone" : var.availability_zones[1], "subnet_mask_length" : 24 },
+    "k8s-n-a" : { "idx" : 5, "zone" : var.availability_zones[0], "subnet_mask_length" : 24 },
+    "k8s-n-b" : { "idx" : 6, "zone" : var.availability_zones[1], "subnet_mask_length" : 24 },
   }
 }
 
