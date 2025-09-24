@@ -111,7 +111,7 @@ module "vpc-client1" {
 
   name = "${var.name}-client1"
 
-  cidr_block              = cidrsubnet(var.cidr, 3, 4)
+  cidr_block              = cidrsubnet(var.cidr, 3, 6)
   public_mgmt_prefix_list = aws_ec2_managed_prefix_list.mgmt_ips.id
   deploy_igw              = true
 
@@ -130,7 +130,7 @@ module "vpc-client2" {
 
   name = "${var.name}-client2"
 
-  cidr_block              = cidrsubnet(var.cidr, 3, 5)
+  cidr_block              = cidrsubnet(var.cidr, 3, 7)
   public_mgmt_prefix_list = aws_ec2_managed_prefix_list.mgmt_ips.id
   deploy_igw              = false
 
