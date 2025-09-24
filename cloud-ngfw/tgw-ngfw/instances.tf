@@ -26,9 +26,8 @@ resource "aws_instance" "attacker" {
   key_name             = data.aws_key_pair.key_name.key_name
   iam_instance_profile = var.iam_instance_profile
 
-  network_interface {
+  primary_network_interface {
     network_interface_id = aws_network_interface.attacker.id
-    device_index         = 0
   }
   lifecycle { ignore_changes = [ ami ] }
   tags = {
@@ -60,9 +59,8 @@ resource "aws_instance" "victim" {
   key_name             = data.aws_key_pair.key_name.key_name
   iam_instance_profile = var.iam_instance_profile
 
-  network_interface {
+  primary_network_interface {
     network_interface_id = aws_network_interface.victim.id
-    device_index         = 0
   }
 
   lifecycle { ignore_changes = [ ami ] }

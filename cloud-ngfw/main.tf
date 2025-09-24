@@ -9,6 +9,9 @@ terraform {
       source = "PaloAltoNetworks/cloudngfwaws"
       version = "2.0.20"
     }
+    aws = {
+      version = "~>6.14"
+    }
   }
 }
 
