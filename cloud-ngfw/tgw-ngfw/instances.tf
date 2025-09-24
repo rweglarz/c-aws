@@ -33,6 +33,7 @@ resource "aws_instance" "attacker" {
   lifecycle { ignore_changes = [ ami ] }
   tags = {
     Name = "${var.name}-attacker"
+    role = "attacker"
   }
 }
 resource "aws_eip" "attacker" {
@@ -67,6 +68,7 @@ resource "aws_instance" "victim" {
   lifecycle { ignore_changes = [ ami ] }
   tags = {
     Name = "${var.name}-victim"
+    role = "victim"
   }
 }
 resource "aws_eip" "victim" {
@@ -95,6 +97,9 @@ module "client1" {
     module.vpc-client1.security_group_ids.private,
     module.vpc-client1.security_group_ids.outbound,
   ]
+  tags = {
+    role = "client"
+  }
 }
 
 module "client2" {
@@ -114,4 +119,8 @@ module "client2" {
     module.vpc-client2.security_group_ids.private,
     module.vpc-client2.security_group_ids.outbound,
   ]
+
+  tags = {
+    role = "client"
+  }
 }
