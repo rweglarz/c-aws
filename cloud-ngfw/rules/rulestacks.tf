@@ -67,7 +67,8 @@ resource "cloudngfwaws_security_rule" "r1" {
     ]
   }
   category {}
-  applications = ["web-browsing"]
+  # applications = ["web-browsing"]
+  applications = ["any"]
   protocol     = "application-default"
   action       = "Allow"
   logging      = true
@@ -130,7 +131,11 @@ resource "cloudngfwaws_security_rule" "client-allow-decrypt" {
   name        = "client-allow-decrypt"
   description = "Configured via Terraform"
   source {
-    cidrs = ["172.16.1.0/24"]
+    cidrs = [
+      "172.16.1.0/24",
+      "172.16.2.0/24",
+      "172.16.3.0/24",
+    ]
   }
   destination {
     cidrs = ["any"]
@@ -184,6 +189,27 @@ resource "cloudngfwaws_security_rule" "any-allow-decrypt" {
   applications = ["any"]
   category {}
   protocol = "any"
+
+  decryption_rule_type = "SSLOutboundInspection"
+  action               = "Allow"
+  logging              = true
+}
+
+resource "cloudngfwaws_security_rule" "test-111111" {
+  rulestack   = cloudngfwaws_rulestack.rs1.name
+  priority    = 305
+  rule_list   = "LocalRule"
+  name        = "test-service-port-range"
+  description = "Configured via Terraform"
+  source {
+    cidrs = ["any"]
+  }
+  destination {
+    cidrs = ["any"]
+  }
+  applications = ["any"]
+  category {}
+  protocol = "TCP:2000-2100"
 
   decryption_rule_type = "SSLOutboundInspection"
   action               = "Allow"
