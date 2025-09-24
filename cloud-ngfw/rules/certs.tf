@@ -1,39 +1,34 @@
+locals {
+  sm-trust   = "${var.name}-panka-trust"
+  sm-untrust = "${var.name}-panka-untrust"
+}
+
 resource "cloudngfwaws_certificate" "s-trust" {
   rulestack   = cloudngfwaws_rulestack.rs1.name
-  name        = "self-signed-trust2"
+  name        = "${var.name}-self-signed-trust2"
   self_signed = true
 }
 resource "cloudngfwaws_certificate" "s-untrust" {
   rulestack   = cloudngfwaws_rulestack.rs1.name
-  name        = "self-signed-untrust2"
+  name        = "${var.name}-self-signed-untrust2"
   self_signed = true
 }
 
 resource "cloudngfwaws_certificate" "sm-trust" {
   rulestack   = cloudngfwaws_rulestack.rs1.name
-  name        = "panka-trust"
+  name        = local.sm-trust
   //self_signed = false
   signer_arn = aws_secretsmanager_secret.trust.arn
 }
 resource "cloudngfwaws_certificate" "sm-untrust" {
   rulestack   = cloudngfwaws_rulestack.rs1.name
-  name        = "panka-untrust"
+  name        = local.sm-untrust
   //self_signed = false
   signer_arn = aws_secretsmanager_secret.untrust.arn
 }
-/*
-resource "cloudngfwaws_certificate" "test1" {
-  rulestack   = cloudngfwaws_rulestack.rs1.name
-  name        = "test1"
-  self_signed = true
-  signer_arn = aws_secretsmanager_secret.untrust.arn
-}
-*/
-
-
 
 resource "aws_secretsmanager_secret" "trust" {
-  name = "ngfw-trust"
+  name = "${var.name}-ngfw-trust"
   tags = {
     PaloAltoCloudNGFW = true,
   }
@@ -47,7 +42,7 @@ resource "aws_secretsmanager_secret_version" "trust" {
 }
 
 resource "aws_secretsmanager_secret" "untrust" {
-  name = "ngfw-untrust"
+  name = "${var.name}-ngfw-untrust"
   tags = {
     PaloAltoCloudNGFW = true,
   }

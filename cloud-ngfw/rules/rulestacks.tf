@@ -9,9 +9,9 @@ resource "cloudngfwaws_rulestack" "rs1" {
     #anti_spyware = "None"
     vulnerability = "BestPractice"
     url_filtering                = "Custom"
-    outbound_trust_certificate   = "panka-trust"
-    outbound_untrust_certificate = "panka-untrust"
-    #outbound_trust_certificate = "self-signed-trust2"
+    #url_filtering                = "None"
+    outbound_trust_certificate   = local.sm-trust
+    outbound_untrust_certificate = local.sm-untrust
   }
 }
 
