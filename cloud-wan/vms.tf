@@ -19,8 +19,8 @@ module "vms_eu_central" {
   iam_instance_profile = "SSMInstanceProfile"
 
   vpc_security_group_ids = [
-    each.value.security_groups.public_mgmt,
-    each.value.security_groups.private,
+    each.value.security_group_ids.public_mgmt,
+    each.value.security_group_ids.private,
   ]
 }
 
@@ -46,8 +46,8 @@ module "vms_eu_west" {
   iam_instance_profile = "SSMInstanceProfile"
 
   vpc_security_group_ids = [
-    each.value.security_groups.public_mgmt,
-    each.value.security_groups.private,
+    each.value.security_group_ids.public_mgmt,
+    each.value.security_group_ids.private,
   ]
 }
 
@@ -74,7 +74,7 @@ module "vms_us_east" {
   iam_instance_profile = "SSMInstanceProfile"
 
   vpc_security_group_ids = [
-    each.value.security_groups.public_mgmt,
-    each.value.security_groups.private,
+    each.value.security_group_ids.public_mgmt,
+    each.value.security_group_ids.private,
   ]
 }
