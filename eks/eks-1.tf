@@ -30,7 +30,16 @@ module "eks_c1" {
     [for k, v in var.mgmt_ips : v.cidr],
     [for ip in [var.panorama_ip] : "${ip}/32"],
   )
-  endpoint_public_access  = true #just to have it explicitly
+  security_group_additional_rules = {
+    ingress_vm_443 = {
+      description                = "Allow local workloads to EKS API"
+      protocol                   = "tcp"
+      from_port                  = 443
+      to_port                    = 443
+      type                       = "ingress"
+      cidr_blocks                = ["172.16.0.0/12"]
+    }
+  }
   endpoint_private_access = true
 
   enable_cluster_creator_admin_permissions = true

@@ -51,3 +51,13 @@ variable "panorama_ip" { }
 variable "gwlb_service_name" {
   default = null
 }
+
+variable "airs_tc_bootstrap" {
+ default = null
+}
+
+variable "airs_tc_ami" {
+  default = {
+    eu-central-1 = "ami-08b5dd8738da5e661"
+  }
+}
