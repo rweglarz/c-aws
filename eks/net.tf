@@ -12,7 +12,9 @@ module "vpc_eks" {
 
   subnet_mask_length = 26
 
-  connect_tgw = false
+  connect_tgw                    = var.tgw_config.tgw_id!=null
+  transit_gateway_id             = var.tgw_config.tgw_id
+  transit_gateway_route_table_id = var.tgw_config.spoke_rt_id
 
   subnets = {
     "mgmt" : { "idx" : 0, "zone" : var.availability_zones[0] },
@@ -22,14 +24,21 @@ module "vpc_eks" {
     "gwlbe-b" : { "idx" : 4, "zone" : var.availability_zones[1] },
     "k8s-cp-a" : { "idx" : 5, "zone" : var.availability_zones[0] },
     "k8s-cp-b" : { "idx" : 6, "zone" : var.availability_zones[1] },
+    "tgwa-a"  : { "idx" : 7, "zone" : var.availability_zones[0] },
+    "tgwa-b"  : { "idx" : 8, "zone" : var.availability_zones[1] },
     "k8s-n-a" : { "idx" : 5, "zone" : var.availability_zones[0], "subnet_mask_length" : 24 },
     "k8s-n-b" : { "idx" : 6, "zone" : var.availability_zones[1], "subnet_mask_length" : 24 },
   }
 }
 
+resource "aws_ec2_transit_gateway_route_table_propagation" "to_sec" {
+  transit_gateway_attachment_id  = module.vpc_eks.transit_gateway_attachment_id
+  transit_gateway_route_table_id = var.tgw_config.sec_rt_id
+}
+
 resource "aws_route_table_association" "mgmt" {
   subnet_id      = module.vpc_eks.subnets["mgmt"].id
-  route_table_id = module.vpc_eks.route_tables["via_igw"]
+  route_table_id = module.vpc_eks.route_tables["via_mixed"]
 }
 
 

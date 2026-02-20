@@ -61,3 +61,11 @@ variable "airs_tc_ami" {
     eu-central-1 = "ami-08b5dd8738da5e661"
   }
 }
+
+variable "tgw_config" {
+  default = {
+    tgw_id      = null
+    sec_rt_id   = null
+    spoke_rt_id = null
+  }
+}
