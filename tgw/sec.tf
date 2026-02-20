@@ -114,3 +114,7 @@ module "mfw" {
 output "scale_it_out" {
   value = "awsscg m-mfw 2"
 }
+
+output "fw-vpc_endpoint_service_name" {
+  value = module.mfw.vpc_endpoint_service_name
+}
