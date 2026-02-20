@@ -82,6 +82,11 @@ variable "fw_instance_type" {
   default = "m5.xlarge"
   type    = string
 }
+
+variable "fw_ami_id" {
+  default = null
+}
+
 variable "fw_version" {
   default = "11.2.5"
   type    = string
@@ -110,5 +115,9 @@ variable "gcp_panorama_vpc_id" {
 }
 
 variable "use_redis" {
+  default = false
+}
+
+variable "airs" {
   default = false
 }

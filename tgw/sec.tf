@@ -51,8 +51,9 @@ module "bs" {
 locals {
   base_bootstrap = merge(
     var.bootstrap_options["common"],
-    var.bootstrap_options["pan_pub"],
-    var.bootstrap_options["gwlb"],
+    var.airs==false ? var.bootstrap_options["pan_pub"] : {},
+    var.airs==false ? var.bootstrap_options["gwlb"] : {},
+    var.airs==true ? var.bootstrap_options["airs"] : {},
     var.use_redis ? var.bootstrap_options["redis"] : {},
   )
   fw_bootstrap = var.full_bootstrap ? {
@@ -68,13 +69,14 @@ module "mfw" {
   dual_stack           = var.dual_stack
   fw_version           = var.fw_version
   fw_instance_type     = var.fw_instance_type
+  fw_ami_id            = var.fw_ami_id
   iam_instance_profile = data.terraform_remote_state.mgmt.outputs.instance_profile-pan_gwlb
   key_pair             = var.key_pair
   desired_capacity = 0
   target_failover  = var.target_failover
 
   bootstrap_options         = local.fw_bootstrap
-  health_check_grace_period = var.full_bootstrap ? 2100 : null
+  health_check_grace_period = var.airs ? 3600 : 2100
 
   vpc_id = module.vpc_sec.vpc.id
   gwlb_subnet_ids   = [for k,v in module.vpc_sec.subnets: v.id if strcontains(k, "gwlb-")]

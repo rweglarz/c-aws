@@ -1,18 +1,25 @@
 bootstrap_options = {
   common = {
-    cgname                      = "cgm"
-    dhcp-accept-server-hostname = "yes"
-    dgname                      = "aws-gwlb"
-    tplname                     = "aws-gwlb"
-    mgmt-interface-swap         = "enable"
+    dhcp-accept-server-hostname           = "yes"
+    mgmt-interface-swap                   = "enable"
+    vm-series-auto-registration-pin-id    = "00000000-0000-0000-0000-000000000000"
+    vm-series-auto-registration-pin-value = "00000000000000000000000000000000"
   }
   pan_pub = {
     panorama-server   = "aaa.bbb.ccc.ddd"
+    dgname           = "aws-gwlb"
+    tplname          = "aws-gwlb"
+    cgname           = "cgm"
   }
   gwlb = {
     plugin-op-commands = "aws-gwlb-inspect:enable"
     vm-auth-key        = "aaaaaaaaaaaaaaa"
     authcodes          = "D0000000"
+  }
+  airs = {
+    panorama-server = "cloud"
+    authcodes       = "D0000000"
+    dgname          = "aws-gwlb"
   }
   redis = {
     plugin-op-commands = "aws-gwlb-inspect:enable,set-sess-ress:True"
